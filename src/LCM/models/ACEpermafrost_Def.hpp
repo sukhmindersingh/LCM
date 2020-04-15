@@ -527,7 +527,7 @@ ACEpermafrostMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
     }
   }
   */
-  bool sediment_given = false;
+  bool sediment_given{false};
   if ((sand_from_file_.size() > 0) && (clay_from_file_.size() > 0) &&
       (silt_from_file_.size() > 0) && (peat_from_file_.size() > 0)) {
     sediment_given = true;
@@ -543,7 +543,7 @@ ACEpermafrostMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   RealType const B = 10.0;
   RealType       v = 25.0;
   
-  if (sediment_given = true) {
+  if (sediment_given == true) {
     auto sand_frac =
         interpolateVectors(z_above_mean_sea_level_, sand_from_file_, height);
     auto clay_frac =
