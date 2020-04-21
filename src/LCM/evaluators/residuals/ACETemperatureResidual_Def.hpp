@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "Albany_Macros.hpp"
 #include "Intrepid2_FunctionSpaceTools.hpp"
@@ -10,9 +8,6 @@
 #include "Phalanx_DataLayout.hpp"
 
 namespace LCM {
-//
-//
-//
 template <typename EvalT, typename Traits>
 ACETemperatureResidual<EvalT, Traits>::ACETemperatureResidual(
     Teuchos::ParameterList const&        p,
@@ -37,7 +32,8 @@ ACETemperatureResidual<EvalT, Traits>::ACETemperatureResidual(
           dl->qp_scalar),
       residual_(  // evaluated
           p.get<std::string>("ACE Residual Name"),
-          dl->node_scalar)
+          dl->node_scalar),
+      scale_residual_factor(p.get<double>("ACE Residual Scale Factor"))
 {
   // List dependent fields
   this->addDependentField(wbf_);
@@ -64,9 +60,6 @@ ACETemperatureResidual<EvalT, Traits>::ACETemperatureResidual(
   this->setName("ACE Temperature Residual" + PHX::print<EvalT>());
 }
 
-//
-//
-//
 template <typename EvalT, typename Traits>
 void
 ACETemperatureResidual<EvalT, Traits>::postRegistrationSetup(
@@ -85,9 +78,6 @@ ACETemperatureResidual<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(residual_, fm);
 }
 
-//
-//
-//
 template <typename EvalT, typename Traits>
 void ACETemperatureResidual<EvalT, Traits>::evaluateFields(
     typename Traits::EvalData)
@@ -106,6 +96,7 @@ void ACETemperatureResidual<EvalT, Traits>::evaluateFields(
                                    wgradbf_(cell, node, qp, i);
         }
       }
+      residual_(cell, node) *= scale_residual_factor;
     }
   }
 }

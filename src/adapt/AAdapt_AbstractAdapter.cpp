@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "AAdapt_AbstractAdapter.hpp"
 
@@ -10,7 +8,6 @@
 
 namespace AAdapt {
 
-//----------------------------------------------------------------------------
 AbstractAdapter::AbstractAdapter(
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<ParamLib>&               param_lib,
@@ -25,7 +22,6 @@ AbstractAdapter::AbstractAdapter(
   // Nothing to do here
 }
 
-//----------------------------------------------------------------------------
 Teuchos::RCP<Teuchos::ParameterList>
 AbstractAdapter::getGenericAdapterParams(std::string listname) const
 {
@@ -36,6 +32,5 @@ AbstractAdapter::getGenericAdapterParams(std::string listname) const
 
   return valid_pl;
 }
-//----------------------------------------------------------------------------
 
 }  // namespace AAdapt

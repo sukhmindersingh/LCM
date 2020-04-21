@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "AAdapt_TopologyModification.hpp"
 
@@ -18,9 +16,6 @@ typedef stk::mesh::EntityRank         EntityRank;
 typedef stk::mesh::RelationIdentifier EdgeId;
 typedef stk::mesh::EntityKey          EntityKey;
 
-//
-//
-//
 TopologyMod::TopologyMod(
     Teuchos::RCP<Teuchos::ParameterList> const& params,
     Teuchos::RCP<ParamLib> const&               param_lib,
@@ -130,7 +125,6 @@ TopologyMod::getValidAdapterParameters() const
   return valid_pl_;
 }
 
-//----------------------------------------------------------------------------
 void
 AAdapt::TopologyMod::showRelations()
 {
@@ -163,7 +157,6 @@ AAdapt::TopologyMod::showRelations()
 }
 
 #if defined(ALBANY_MPI)
-//----------------------------------------------------------------------------
 int
 AAdapt::TopologyMod::accumulateFractured(int num_fractured)
 {
@@ -175,7 +168,6 @@ AAdapt::TopologyMod::accumulateFractured(int num_fractured)
   return total_fractured;
 }
 
-//----------------------------------------------------------------------------
 // Parallel all-gatherv function. Communicates local open list to
 // all processors to form global open list.
 void
@@ -284,14 +276,12 @@ AAdapt::TopologyMod::getGlobalOpenList(
 }
 
 #else
-//----------------------------------------------------------------------------
 int
 AAdapt::TopologyMod::accumulateFractured(int num_fractured)
 {
   return num_fractured;
 }
 
-//----------------------------------------------------------------------------
 // Parallel all-gatherv function. Communicates local open list to
 // all processors to form global open list.
 void

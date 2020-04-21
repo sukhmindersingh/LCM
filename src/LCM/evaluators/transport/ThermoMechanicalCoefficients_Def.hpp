@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 
@@ -10,7 +8,6 @@
 
 namespace LCM {
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 ThermoMechanicalCoefficients<EvalT, Traits>::ThermoMechanicalCoefficients(
     Teuchos::ParameterList&              p,
@@ -71,7 +68,6 @@ ThermoMechanicalCoefficients<EvalT, Traits>::ThermoMechanicalCoefficients(
   temperature_name_ = p.get<std::string>("Temperature Name") + "_old";
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 ThermoMechanicalCoefficients<EvalT, Traits>::postRegistrationSetup(
@@ -91,7 +87,6 @@ ThermoMechanicalCoefficients<EvalT, Traits>::postRegistrationSetup(
   if (have_mech_) { this->utils.setFieldData(def_grad_, fm); }
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 ThermoMechanicalCoefficients<EvalT, Traits>::evaluateFields(
@@ -158,5 +153,4 @@ ThermoMechanicalCoefficients<EvalT, Traits>::evaluateFields(
     }
   }
 }
-//------------------------------------------------------------------------------
 }  // namespace LCM

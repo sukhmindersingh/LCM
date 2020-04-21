@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 #include <MiniTensor.h>
 
 #include <Phalanx_DataLayout.hpp>
@@ -23,7 +21,6 @@ lcm_cbrt(T const& x)
   return std::cbrt(x);
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 HeliumODEs<EvalT, Traits>::HeliumODEs(
     Teuchos::ParameterList&              p,
@@ -86,7 +83,6 @@ HeliumODEs<EvalT, Traits>::HeliumODEs(
       p.get<std::string>("Bubble Volume Fraction Name") + "_old";
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 HeliumODEs<EvalT, Traits>::postRegistrationSetup(
@@ -101,7 +97,6 @@ HeliumODEs<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(bubble_volume_fraction_, fm);
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 HeliumODEs<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
@@ -320,5 +315,4 @@ HeliumODEs<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
     }
   }
 }
-//------------------------------------------------------------------------------
 }  // namespace LCM

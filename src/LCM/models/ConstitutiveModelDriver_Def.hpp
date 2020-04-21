@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 
@@ -12,7 +10,6 @@
 
 namespace LCM {
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 ConstitutiveModelDriver<EvalT, Traits>::ConstitutiveModelDriver(
     Teuchos::ParameterList&              p,
@@ -37,7 +34,6 @@ ConstitutiveModelDriver<EvalT, Traits>::ConstitutiveModelDriver(
   this->setName("ConstitutiveModelDriver" + PHX::print<EvalT>());
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 ConstitutiveModelDriver<EvalT, Traits>::postRegistrationSetup(
@@ -50,7 +46,6 @@ ConstitutiveModelDriver<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(residual_, fm);
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 ConstitutiveModelDriver<EvalT, Traits>::evaluateFields(
@@ -89,7 +84,5 @@ ConstitutiveModelDriver<EvalT, Traits>::evaluateFields(
     }
   }
 }
-
-//------------------------------------------------------------------------------
 
 }  // namespace LCM

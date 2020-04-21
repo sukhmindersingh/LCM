@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "Moertel_InterfaceT.hpp"
 #include "Moertel_NodeT.hpp"
@@ -82,7 +80,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS_1A(OverlapT, IFace)::ConvexHull(
   // put in the first 2 points
   AddPointtoPolygon(upper, 0, points[0]->Xi());  // std::cout << *points[0];
   AddPointtoPolygon(upper, 1, points[1]->Xi());  // std::cout << *points[1];
-  //---------------------------------------------------------------------------
   for (int i = 2; i < np; ++i) {
     // add point[i] to upper
     AddPointtoPolygon(upper, i, points[i]->Xi());  // std::cout << *points[i];
@@ -107,7 +104,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS_1A(OverlapT, IFace)::ConvexHull(
       lower, np - 1, points[np - 1]->Xi());  // std::cout << *points[np-1];
   AddPointtoPolygon(
       lower, np - 2, points[np - 2]->Xi());  // std::cout << *points[np-2];
-  //---------------------------------------------------------------------------
   for (int i = np - 3; i >= 0; --i) {
     // add point[i] to lower
     AddPointtoPolygon(lower, i, points[i]->Xi());  // std::cout << *points[i];

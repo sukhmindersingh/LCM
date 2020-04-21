@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #if !defined(LCM_ParallelNeohookeanModel_Def_hpp)
 #define LCM_ParallelNeohookeanModel_Def_hpp
@@ -17,7 +15,6 @@
 
 namespace LCM {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 NeohookeanKernel<EvalT, Traits>::NeohookeanKernel(
     ConstitutiveModel<EvalT, Traits>&    model,

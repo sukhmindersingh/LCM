@@ -1,13 +1,12 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #if !defined(ACETemperatureResidual_hpp)
 #define ACETemperatureResidual_hpp
 
 #include "Albany_Layouts.hpp"
+#include "Albany_ScalarOrdinalTypes.hpp"
 #include "PHAL_Dimension.hpp"
 #include "Phalanx_Evaluator_Derived.hpp"
 #include "Phalanx_Evaluator_WithBaseImpl.hpp"
@@ -62,6 +61,7 @@ class ACETemperatureResidual : public PHX::EvaluatorWithBaseImpl<Traits>,
 
   // Workspace:
   unsigned int num_qp_{0}, num_dims_{0}, num_nodes_{0}, workset_size_{0};
+  RealType     scale_residual_factor{0.0};
 };
 
 }  // namespace LCM

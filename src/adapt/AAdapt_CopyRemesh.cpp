@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "AAdapt_CopyRemesh.hpp"
 
@@ -15,7 +13,6 @@ typedef stk::mesh::EntityRank         EntityRank;
 typedef stk::mesh::RelationIdentifier EdgeId;
 typedef stk::mesh::EntityKey          EntityKey;
 
-//----------------------------------------------------------------------------
 CopyRemesh::CopyRemesh(
     Teuchos::RCP<Teuchos::ParameterList> const& params,
     Teuchos::RCP<ParamLib> const&               param_lib,
@@ -39,7 +36,6 @@ CopyRemesh::CopyRemesh(
   base_exo_filename_ = stk_mesh_struct_->exoOutFile;
 }
 
-//----------------------------------------------------------------------------
 bool
 CopyRemesh::queryAdaptationCriteria(int iter)
 {
@@ -62,7 +58,6 @@ CopyRemesh::queryAdaptationCriteria(int iter)
   return false;
 }
 
-//----------------------------------------------------------------------------
 bool
 CopyRemesh::adaptMesh()
 {
@@ -97,7 +92,6 @@ CopyRemesh::adaptMesh()
   return true;
 }
 
-//----------------------------------------------------------------------------
 Teuchos::RCP<Teuchos::ParameterList const>
 CopyRemesh::getValidAdapterParameters() const
 {
@@ -117,6 +111,5 @@ CopyRemesh::getValidAdapterParameters() const
 
   return validPL;
 }
-//----------------------------------------------------------------------------
 
 }  // namespace AAdapt

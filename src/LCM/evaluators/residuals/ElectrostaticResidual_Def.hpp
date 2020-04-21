@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 
@@ -11,7 +9,6 @@
 
 namespace LCM {
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 ElectrostaticResidual<EvalT, Traits>::ElectrostaticResidual(
     Teuchos::ParameterList&              p,
@@ -36,7 +33,6 @@ ElectrostaticResidual<EvalT, Traits>::ElectrostaticResidual(
   num_dims_  = dims[3];
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 ElectrostaticResidual<EvalT, Traits>::postRegistrationSetup(
@@ -64,5 +60,4 @@ ElectrostaticResidual<EvalT, Traits>::evaluateFields(
               edisp_(cell, pt, i) * w_grad_bf_(cell, node, pt, i);
   }
 }
-//------------------------------------------------------------------------------
 }  // namespace LCM

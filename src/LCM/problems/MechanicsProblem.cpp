@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 #include "MechanicsProblem.hpp"
 
 #include "MechanicsProblem_Def.hpp"
@@ -297,8 +295,6 @@ MechanicsProblem::MechanicsProblem(
   }
 }  // MechanicsProblem
 
-//------------------------------------------------------------------------------
-
 void
 MechanicsProblem::buildProblem(
     Teuchos::ArrayRCP<Teuchos::RCP<MeshSpecsStruct>> meshSpecs,
@@ -338,8 +334,6 @@ MechanicsProblem::buildProblem(
   }
 }
 
-//------------------------------------------------------------------------------
-
 void
 MechanicsProblem::getAllocatedStates(
     Teuchos::ArrayRCP<Teuchos::ArrayRCP<
@@ -351,8 +345,6 @@ MechanicsProblem::getAllocatedStates(
   old_state = old_state_;
   new_state = new_state_;
 }
-
-//------------------------------------------------------------------------------
 
 void
 MechanicsProblem::applyProblemSpecificSolverSettings(
@@ -429,8 +421,6 @@ MechanicsProblem::applyProblemSpecificSolverSettings(
   }
 }
 
-//------------------------------------------------------------------------------
-
 void
 MechanicsProblem::constructDirichletEvaluators(MeshSpecsStruct const& meshSpecs)
 {
@@ -477,11 +467,7 @@ MechanicsProblem::constructDirichletEvaluators(MeshSpecsStruct const& meshSpecs)
   nodeSetIDs_ = dirUtils.getNodeSetIDs();
 }
 
-//------------------------------------------------------------------------------
-
-//
 // Neumann (Traction) BCs
-//
 void
 MechanicsProblem::constructNeumannEvaluators(
     Teuchos::RCP<MeshSpecsStruct> const& meshSpecs)
@@ -585,8 +571,6 @@ MechanicsProblem::constructNeumannEvaluators(
       this->paramLib);
 }
 
-//------------------------------------------------------------------------------
-
 ///
 /// Protected methods for MechanicsProblem class
 ///
@@ -616,8 +600,6 @@ MechanicsProblem::getVariableType(
   have_variable = (variable_type != MECH_VAR_TYPE_NONE);
   have_equation = (variable_type == MECH_VAR_TYPE_DOF);
 }
-
-//------------------------------------------------------------------------------
 
 std::string
 MechanicsProblem::variableTypeToString(

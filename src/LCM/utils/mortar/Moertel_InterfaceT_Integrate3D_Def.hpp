@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <ctime>
 #include <vector>
@@ -28,12 +26,10 @@ MoertelT::InterfaceT<3, ST, LO, GO, N>::Mortar_Integrate(
   bool ok    = false;
   intparams_ = intparams;
 
-  //-------------------------------------------------------------------
   // time this process
   Teuchos::Time time("Mortar_Integrate");
   time.start(true);
 
-  //-------------------------------------------------------------------
   if (IsOneDimensional()) {
     if (gcomm_->getRank() == 0)
       std::cout << "***ERR*** MoertelT::InterfaceT::Mortar_Integrate:\n"
@@ -45,7 +41,6 @@ MoertelT::InterfaceT<3, ST, LO, GO, N>::Mortar_Integrate(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // interface needs to be complete
   if (!IsComplete()) {
     if (gcomm_->getRank() == 0)
@@ -58,11 +53,9 @@ MoertelT::InterfaceT<3, ST, LO, GO, N>::Mortar_Integrate(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // send all procs not member of this interface's intra-comm out of here
   if (lcomm_ == Teuchos::null) return true;
 
-  //-------------------------------------------------------------------
   // interface needs to have a mortar side assigned
   if (MortarSide() == -1) {
     if (gcomm_->getRank() == 0)
@@ -75,7 +68,6 @@ MoertelT::InterfaceT<3, ST, LO, GO, N>::Mortar_Integrate(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // interface segments need to have at least one function on the mortar side
   // and two functions on the slave side
   int mside = MortarSide();
@@ -105,17 +97,14 @@ MoertelT::InterfaceT<3, ST, LO, GO, N>::Mortar_Integrate(
       return false;
     }
 
-  //-------------------------------------------------------------------
   // do the integration of the master and slave side
   ok = Integrate_3D();
 
   if (!ok) return false;
 
-  //-------------------------------------------------------------------
   // set the flag that this interface has been successfully integrated
   isIntegrated_ = true;
 
-  //-------------------------------------------------------------------
   // time this process
   if (OutLevel() > 5) {
     std::cout << "MoertelT::Interface " << Id() << ": Integration on proc "
@@ -124,7 +113,6 @@ MoertelT::InterfaceT<3, ST, LO, GO, N>::Mortar_Integrate(
     fflush(stdout);
   }
 
-  //-------------------------------------------------------------------
   return true;
 }
 
@@ -304,7 +292,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::Assemble_3D(
   int mside = MortarSide();
   int sside = OtherSide(mside);
 
-  //-------------------------------------------------------------------
   // loop over all slave nodes
   std::map<int, Teuchos::RCP<MoertelT::MOERTEL_TEMPLATE_CLASS(NodeT)>>::iterator
       curr;
@@ -330,8 +317,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::Assemble_3D(
 
     std::map<int, double>::iterator rowcurr;
 
-    //-------------------------------------------------------------------
-    //-------------------------------------------------------------------
     // assemble the Drow
     if (Drow != Teuchos::null) {
       for (rowcurr = Drow->begin(); rowcurr != Drow->end(); ++rowcurr) {
@@ -402,8 +387,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::Assemble_3D(
       }    // for (rowcurr=Drow->begin(); rowcurr!=Drow->end(); ++rowcurr)
     }
 
-    //-------------------------------------------------------------------
-    //-------------------------------------------------------------------
     // assemble the Mrow
     if (Mrow != Teuchos::null) {
       for (rowcurr = Mrow->begin(); rowcurr != Mrow->end(); ++rowcurr) {
@@ -524,8 +507,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::Assemble_3D(
 
   }  // for (curr=rnode_[sside].begin(); curr!=rnode_[sside].end(); ++curr)
 
-  //-------------------------------------------------------------------
-  //-------------------------------------------------------------------
   // In case this interface was parallel we might have missed something upto
   // here. Boundary terms of D and M, Mmod are assembled non-local (that is to
   // close inner-interface nodes). If these inner-interface nodes belong
@@ -885,7 +866,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::AssembleResidualVector()
   int mside = MortarSide();
   int sside = OtherSide(mside);
 
-  //-------------------------------------------------------------------
   // loop over all slave nodes
   std::map<int, Teuchos::RCP<MoertelT::MOERTEL_TEMPLATE_CLASS(NodeT)>>::iterator
       curr;
@@ -933,8 +913,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::AssembleResidualVector()
 
     std::map<int, double>::iterator rowcurr;
 
-    //-------------------------------------------------------------------
-    //-------------------------------------------------------------------
     // assemble the Drow
     if (Drow != Teuchos::null) {
       for (rowcurr = Drow->begin(); rowcurr != Drow->end(); ++rowcurr) {
@@ -1002,8 +980,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::AssembleResidualVector()
       }    // for (rowcurr=Drow->begin(); rowcurr!=Drow->end(); ++rowcurr)
     }
 
-    //-------------------------------------------------------------------
-    //-------------------------------------------------------------------
     // assemble the Mrow
     if (Mrow != Teuchos::null) {
       for (rowcurr = Mrow->begin(); rowcurr != Mrow->end(); ++rowcurr) {
@@ -1013,7 +989,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::AssembleResidualVector()
         if (abs(val) < CONSTRAINT_MATRIX_ZERO) continue;
 
           // std::cout << "Current colmnode: " << colnode << std::endl;
-          //
 #if defined(PDANDM)  // Save the row, col, and value
         Mmat.insertGlobalValues(curr->second->Id(), 1, &val, &colnode);
 #endif
@@ -1079,7 +1054,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::AssembleResidualVector()
 
       for (int lrow = 0; lrow < (int)Mmod->size(); ++lrow) {
         //        std::map<int,double>& Mmodrow = (*Mmod)[lrow];
-        //
         int row = slmdof[lrow];
 
         // loop over the columns in that row
@@ -1127,8 +1101,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::AssembleResidualVector()
      }
      */
 
-  //-------------------------------------------------------------------
-  //-------------------------------------------------------------------
   // In case this interface was parallel we might have missed something upto
   // here. Boundary terms of D and M, Mmod are assembled non-local (that is to
   // close inner-interface nodes). If these inner-interface nodes belong

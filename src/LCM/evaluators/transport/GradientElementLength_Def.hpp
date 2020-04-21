@@ -1,14 +1,11 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <Phalanx_DataLayout.hpp>
 
 namespace LCM {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 GradientElementLength<EvalT, Traits>::GradientElementLength(
     Teuchos::ParameterList const&        p,
@@ -32,7 +29,6 @@ GradientElementLength<EvalT, Traits>::GradientElementLength(
   num_dims_  = dims[3];
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 GradientElementLength<EvalT, Traits>::postRegistrationSetup(
@@ -44,7 +40,6 @@ GradientElementLength<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(element_length_, fm);
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 GradientElementLength<EvalT, Traits>::evaluateFields(
@@ -65,5 +60,4 @@ GradientElementLength<EvalT, Traits>::evaluateFields(
     }
   }
 }
-//----------------------------------------------------------------------------
 }  // namespace LCM

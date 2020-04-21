@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #define DEBUG_FREQ 100000000000
 #include <MiniTensor.h>
@@ -13,7 +11,6 @@
 
 namespace LCM {
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 CreepModel<EvalT, Traits>::CreepModel(
     Teuchos::ParameterList*              p,
@@ -67,7 +64,6 @@ CreepModel<EvalT, Traits>::CreepModel(
   }
 
   // define the state variables
-  //
   // stress
   this->num_state_variables_++;
   this->state_var_names_.push_back(cauchy_string);
@@ -77,7 +73,6 @@ CreepModel<EvalT, Traits>::CreepModel(
   this->state_var_old_state_flags_.push_back(false);
   this->state_var_output_flags_.push_back(
       p->get<bool>("Output Cauchy Stress", false));
-  //
   // Fp
   this->num_state_variables_++;
   this->state_var_names_.push_back(Fp_string);
@@ -86,7 +81,6 @@ CreepModel<EvalT, Traits>::CreepModel(
   this->state_var_init_values_.push_back(0.0);
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(p->get<bool>("Output Fp", false));
-  //
   // eqps
   this->num_state_variables_++;
   this->state_var_names_.push_back(eqps_string);
@@ -95,7 +89,6 @@ CreepModel<EvalT, Traits>::CreepModel(
   this->state_var_init_values_.push_back(0.0);
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(p->get<bool>("Output eqps", false));
-  //
   // mechanical source
   if (have_temperature_) {
     this->num_state_variables_++;
@@ -122,7 +115,6 @@ CreepModel<EvalT, Traits>::CreepModel(
 //  fprintf(stderr, "\n");
 //}
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 CreepModel<EvalT, Traits>::computeState(

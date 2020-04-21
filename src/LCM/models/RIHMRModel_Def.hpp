@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 
@@ -12,7 +10,6 @@
 
 namespace LCM {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 RIHMRModel<EvalT, Traits>::RIHMRModel(
     Teuchos::ParameterList*              p,
@@ -46,7 +43,6 @@ RIHMRModel<EvalT, Traits>::RIHMRModel(
       std::make_pair(isoHardening_string, dl->qp_scalar));
 
   // define the state variables
-  //
   // stress
   this->num_state_variables_++;
   this->state_var_names_.push_back(cauchy_string);
@@ -55,7 +51,6 @@ RIHMRModel<EvalT, Traits>::RIHMRModel(
   this->state_var_init_values_.push_back(0.0);
   this->state_var_old_state_flags_.push_back(false);
   this->state_var_output_flags_.push_back(true);
-  //
   // logFp
   this->num_state_variables_++;
   this->state_var_names_.push_back(logFp_string);
@@ -64,7 +59,6 @@ RIHMRModel<EvalT, Traits>::RIHMRModel(
   this->state_var_init_values_.push_back(0.0);
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(false);
-  //
   // eqps
   this->num_state_variables_++;
   this->state_var_names_.push_back(eqps_string);
@@ -73,7 +67,6 @@ RIHMRModel<EvalT, Traits>::RIHMRModel(
   this->state_var_init_values_.push_back(0.0);
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(true);
-  //
   // isoHardening
   this->num_state_variables_++;
   this->state_var_names_.push_back(isoHardening_string);
@@ -83,7 +76,6 @@ RIHMRModel<EvalT, Traits>::RIHMRModel(
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(true);
 }
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 RIHMRModel<EvalT, Traits>::computeState(
@@ -287,7 +279,6 @@ RIHMRModel<EvalT, Traits>::computeState(
   }
 
 }  // end of compute state
-//----------------------------------------------------------------------------
 // all local functions for compute state
 template <typename EvalT, typename Traits>
 void
@@ -356,5 +347,4 @@ RIHMRModel<EvalT, Traits>::ResidualJacobian(
   dRdX[1 + 2 * 0] = Rfad[1].dx(0);
   dRdX[1 + 2 * 1] = Rfad[1].dx(1);
 }
-//----------------------------------------------------------------------------
 }  // namespace LCM

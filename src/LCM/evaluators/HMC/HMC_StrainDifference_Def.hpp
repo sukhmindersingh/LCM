@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "Albany_Macros.hpp"
 #include "Intrepid2_FunctionSpaceTools.hpp"
@@ -10,7 +8,6 @@
 
 namespace HMC {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 StrainDifference<EvalT, Traits>::StrainDifference(
     Teuchos::ParameterList const&        p,
@@ -34,7 +31,6 @@ StrainDifference<EvalT, Traits>::StrainDifference(
   numDims = dims[2];
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 StrainDifference<EvalT, Traits>::postRegistrationSetup(
@@ -46,7 +42,6 @@ StrainDifference<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(strainDifference, fm);
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 StrainDifference<EvalT, Traits>::evaluateFields(
@@ -64,5 +59,4 @@ StrainDifference<EvalT, Traits>::evaluateFields(
     }
   }
 }
-//----------------------------------------------------------------------------
 }  // namespace HMC

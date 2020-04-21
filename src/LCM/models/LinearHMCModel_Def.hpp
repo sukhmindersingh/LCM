@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 
@@ -12,7 +10,6 @@
 
 namespace LCM {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 LinearHMCModel<EvalT, Traits>::LinearHMCModel(
     Teuchos::ParameterList*              p,
@@ -77,7 +74,6 @@ LinearHMCModel<EvalT, Traits>::LinearHMCModel(
   this->state_var_old_state_flags_.push_back(false);
   this->state_var_output_flags_.push_back(true);
 }
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 LinearHMCModel<EvalT, Traits>::computeState(
@@ -242,5 +238,4 @@ LinearHMCModel<EvalT, Traits>::computeState(
       break;
   }
 }
-//----------------------------------------------------------------------------
 }  // namespace LCM

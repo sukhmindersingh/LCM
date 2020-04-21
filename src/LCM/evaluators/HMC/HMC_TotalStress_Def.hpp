@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "Albany_Macros.hpp"
 #include "Albany_Utils.hpp"
@@ -11,7 +9,6 @@
 
 namespace HMC {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 TotalStress<EvalT, Traits>::TotalStress(
     Teuchos::ParameterList const&        p,
@@ -43,7 +40,6 @@ TotalStress<EvalT, Traits>::TotalStress(
   numDims = dims[2];
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 TotalStress<EvalT, Traits>::postRegistrationSetup(
@@ -56,7 +52,6 @@ TotalStress<EvalT, Traits>::postRegistrationSetup(
   for (int i = 0; i < n; i++) this->utils.setFieldData(*(microStress[i]), fm);
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 TotalStress<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
@@ -74,5 +69,4 @@ TotalStress<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
     }
   }
 }
-//----------------------------------------------------------------------------
 }  // namespace HMC

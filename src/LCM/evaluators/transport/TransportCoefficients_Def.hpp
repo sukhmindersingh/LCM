@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 
@@ -13,7 +11,6 @@
 
 namespace LCM {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 TransportCoefficients<EvalT, Traits>::TransportCoefficients(
     Teuchos::ParameterList&              p,
@@ -101,7 +98,6 @@ TransportCoefficients<EvalT, Traits>::TransportCoefficients(
   num_dims_   = dims[2];
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 TransportCoefficients<EvalT, Traits>::postRegistrationSetup(
@@ -124,7 +120,6 @@ TransportCoefficients<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(convection_coefficient_, fm);
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 TransportCoefficients<EvalT, Traits>::evaluateFields(
@@ -291,5 +286,4 @@ TransportCoefficients<EvalT, Traits>::evaluateFields(
     }
   }
 }
-//----------------------------------------------------------------------------
 }  // namespace LCM

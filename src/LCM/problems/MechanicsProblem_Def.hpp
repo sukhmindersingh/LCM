@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 #include "ACETemperatureResidual.hpp"
 #include "Albany_Application.hpp"
 #include "Albany_EvaluatorUtils.hpp"
@@ -103,9 +101,6 @@ MechanicsProblem::buildEvaluators(
   return *op.tags;
 }
 
-//
-//
-//
 Teuchos::RCP<Teuchos::ParameterList const>
 MechanicsProblem::getValidProblemParameters() const
 {
@@ -131,9 +126,6 @@ MechanicsProblem::getValidProblemParameters() const
   return validPL;
 }
 
-//
-//
-//
 template <typename EvalT>
 Teuchos::RCP<const PHX::FieldTag>
 MechanicsProblem::constructEvaluators(
@@ -2385,11 +2377,9 @@ MechanicsProblem::constructEvaluators(
       fm0.template registerEvaluator<EvalT>(ev);
 
       // Outputting state variables
-      //
       // Using field names registered for surface elements
       // (he_concentration, etc.)
       // NOTE: All output variables are stated
-      //
       // helium concentration
 
       bool const output_he = material_db_->getElementBlockParam<bool>(
@@ -2499,12 +2489,16 @@ MechanicsProblem::constructEvaluators(
 
   // Equation for ACE temperature
   if (have_ace_temperature_eq_ == true && (surface_element == false)) {
+    auto const scale_residual_factor =
+        param_list.get<double>("ACE Residual Scale Factor", 1.0);
+
     Teuchos::RCP<Teuchos::ParameterList> p =
         Teuchos::rcp(new Teuchos::ParameterList("ACE Temperature Residual"));
 
     p->set<Teuchos::ParameterList*>("Material Parameters", &param_list);
 
     // Input
+    p->set<double>("ACE Residual Scale Factor", scale_residual_factor);
     p->set<std::string>("Weighted BF Name", "wBF");
     p->set<std::string>("Weighted Gradient BF Name", "wGrad BF");
     p->set<std::string>("ACE Temperature Name", "ACE Temperature");

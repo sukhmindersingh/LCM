@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 
@@ -11,7 +9,6 @@
 
 namespace LCM {
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 StabilizedPressureResidual<EvalT, Traits>::StabilizedPressureResidual(
     Teuchos::ParameterList&              p,
@@ -55,7 +52,6 @@ StabilizedPressureResidual<EvalT, Traits>::StabilizedPressureResidual(
   num_dims_  = dims[3];
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 StabilizedPressureResidual<EvalT, Traits>::postRegistrationSetup(
@@ -74,7 +70,6 @@ StabilizedPressureResidual<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(residual_, fm);
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 StabilizedPressureResidual<EvalT, Traits>::evaluateFields(
@@ -150,5 +145,4 @@ StabilizedPressureResidual<EvalT, Traits>::evaluateFields(
     }
   }
 }
-//------------------------------------------------------------------------------
 }  // namespace LCM

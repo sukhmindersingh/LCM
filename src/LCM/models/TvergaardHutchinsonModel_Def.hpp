@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 
@@ -10,12 +8,10 @@
 
 namespace LCM {
 
-//------------------------------------------------------------------------------
 // See Klein, Theoretical and Applied Fracture Mechanics (2001)
 // for details regarding implementation
 // NOTE: beta_0, beta_1 and beta_2 are parameters that enable one to favor
 // tension or shear. The default tensor should be identity.
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 TvergaardHutchinsonModel<EvalT, Traits>::TvergaardHutchinsonModel(
     Teuchos::ParameterList*              p,
@@ -43,7 +39,6 @@ TvergaardHutchinsonModel<EvalT, Traits>::TvergaardHutchinsonModel(
   this->eval_field_map_.insert(std::make_pair("Shear_Jump", dl->qp_scalar));
 
   // define the state variables
-  //
   // cohesive traction
   this->num_state_variables_++;
   this->state_var_names_.push_back("Cohesive_Traction");
@@ -53,7 +48,6 @@ TvergaardHutchinsonModel<EvalT, Traits>::TvergaardHutchinsonModel(
   this->state_var_old_state_flags_.push_back(false);
   this->state_var_output_flags_.push_back(
       p->get<bool>("Output Cohesive Traction", false));
-  //
   // normal traction
   this->num_state_variables_++;
   this->state_var_names_.push_back("Normal_Traction");
@@ -63,7 +57,6 @@ TvergaardHutchinsonModel<EvalT, Traits>::TvergaardHutchinsonModel(
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(
       p->get<bool>("Output Normal Traction", false));
-  //
   // shear traction
   this->num_state_variables_++;
   this->state_var_names_.push_back("Shear_Traction");
@@ -73,7 +66,6 @@ TvergaardHutchinsonModel<EvalT, Traits>::TvergaardHutchinsonModel(
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(
       p->get<bool>("Output Shear Traction", false));
-  //
   // normal jump
   this->num_state_variables_++;
   this->state_var_names_.push_back("Normal_Jump");
@@ -83,7 +75,6 @@ TvergaardHutchinsonModel<EvalT, Traits>::TvergaardHutchinsonModel(
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(
       p->get<bool>("Output Normal Jump", false));
-  //
   // shear jump
   this->num_state_variables_++;
   this->state_var_names_.push_back("Shear_Jump");
@@ -93,9 +84,7 @@ TvergaardHutchinsonModel<EvalT, Traits>::TvergaardHutchinsonModel(
   this->state_var_old_state_flags_.push_back(true);
   this->state_var_output_flags_.push_back(
       p->get<bool>("Output Shear Jump", false));
-  //
 }
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 TvergaardHutchinsonModel<EvalT, Traits>::computeState(
@@ -221,5 +210,4 @@ TvergaardHutchinsonModel<EvalT, Traits>::computeState(
     }
   }
 }
-//------------------------------------------------------------------------------
 }  // namespace LCM

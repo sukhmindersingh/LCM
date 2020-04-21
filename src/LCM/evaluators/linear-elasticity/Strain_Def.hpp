@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "Albany_Macros.hpp"
 #include "Intrepid2_FunctionSpaceTools.hpp"
@@ -10,7 +8,6 @@
 
 namespace LCM {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 Strain<EvalT, Traits>::Strain(
     Teuchos::ParameterList const&        p,
@@ -30,7 +27,6 @@ Strain<EvalT, Traits>::Strain(
   numDims = dims[2];
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 Strain<EvalT, Traits>::postRegistrationSetup(
@@ -41,7 +37,6 @@ Strain<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(GradU, fm);
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 Strain<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
@@ -58,5 +53,4 @@ Strain<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
     }
   }
 }
-//----------------------------------------------------------------------------
 }  // namespace LCM

@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <stdio.h>
 
@@ -35,10 +33,7 @@ main(int ac, char* av[])
   typedef stk::mesh::Entity                        Entity;
   typedef std::pair<int, int>                      Edge;
 
-  //---------------------------------------------------------------------------------------------------------
-  //
   // Create a command line processor and parse command line options
-  //
   Teuchos::CommandLineProcessor command_line_processor;
 
   command_line_processor.setDocString(
@@ -70,16 +65,12 @@ main(int ac, char* av[])
     return 1;
   }
 
-  //
   // Read the mesh
-  //
   // Copied from Partition.cc
   Teuchos::GlobalMPISession mpiSession(&ac, &av);
   LCM::Topology             topology(input_file, output_file);
 
-  //-----------------------------------------------------------------------------------------
   // GET THE 1D BUNDARY FROM THE INPUT MESH USING dijkstra_shortest_paths
-  //-----------------------------------------------------------------------------------------
   stk::mesh::BulkData&           bulk_data = topology.get_bulk_data();
   std::vector<stk::mesh::Entity> MeshNodes =
       topology.get_rank_entities(bulk_data, 0);
@@ -133,9 +124,7 @@ main(int ac, char* av[])
   delete[] EdgesArray;    // Deallocate memory
   delete[] EdgesWeights;  // Deallocate memory
 
-  //-------------------------------------------------------------------------------
   // Presenting the final output
-  //-------------------------------------------------------------------------------
   std::cout << "Display distances to all graph vertices from source"
             << std::endl;
   graph_traits<graph_t>::vertex_iterator VertexIterator, vend;

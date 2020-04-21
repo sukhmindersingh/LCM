@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #if !defined(LCM_ConstitutiveDriverProblem_hpp)
 #define LCM_ConstitutiveDriverProblem_hpp
@@ -16,7 +14,6 @@
 
 namespace Albany {
 
-//------------------------------------------------------------------------------
 ///
 /// \brief Definition for the Constitutive Model Driver Problem
 ///
@@ -94,7 +91,6 @@ class ConstitutiveDriverProblem : public Albany::AbstractProblem
       Teuchos::ArrayRCP<Teuchos::ArrayRCP<Teuchos::RCP<FC>>> old_state,
       Teuchos::ArrayRCP<Teuchos::ArrayRCP<Teuchos::RCP<FC>>> new_state) const;
 
-  //----------------------------------------------------------------------------
  private:
   ///
   /// Private to prohibit copying
@@ -107,7 +103,6 @@ class ConstitutiveDriverProblem : public Albany::AbstractProblem
   ConstitutiveDriverProblem&
   operator=(const ConstitutiveDriverProblem&);
 
-  //----------------------------------------------------------------------------
  public:
   ///
   /// Main problem setup routine.
@@ -135,7 +130,6 @@ class ConstitutiveDriverProblem : public Albany::AbstractProblem
   constructNeumannEvaluators(
       const Teuchos::RCP<Albany::MeshSpecsStruct>& meshSpecs);
 
-  //----------------------------------------------------------------------------
  protected:
   ///
   /// Boolean marking whether SDBCs are used
@@ -186,7 +180,6 @@ class ConstitutiveDriverProblem : public Albany::AbstractProblem
   ///
   Teuchos::ArrayRCP<Teuchos::ArrayRCP<Teuchos::RCP<FC>>> new_state_;
 };
-//------------------------------------------------------------------------------
 }  // namespace Albany
 
 #include "Albany_EvaluatorUtils.hpp"
@@ -208,7 +201,6 @@ class ConstitutiveDriverProblem : public Albany::AbstractProblem
 #include "FirstPK.hpp"
 #include "Kinematics.hpp"
 
-//------------------------------------------------------------------------------
 template <typename EvalT>
 Teuchos::RCP<const PHX::FieldTag>
 Albany::ConstitutiveDriverProblem::constructEvaluators(

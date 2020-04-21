@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <ctime>
 #include <vector>
@@ -24,7 +22,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::Mortar_Assemble(
     Tpetra::CrsMatrix<ST, LO, GO, N>& D,
     Tpetra::CrsMatrix<ST, LO, GO, N>& M)
 {
-  //-------------------------------------------------------------------
   // interface needs to be complete
   if (!IsComplete()) {
     if (gcomm_->getRank() == 0)
@@ -36,11 +33,9 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::Mortar_Assemble(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // send all procs not member of this interface's intra-comm out of here
   if (lcomm_ == Teuchos::null) return true;
 
-  //-------------------------------------------------------------------
   // interface needs to have a mortar side assigned
   if (MortarSide() == -1) {
     if (gcomm_->getRank() == 0)
@@ -52,7 +47,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::Mortar_Assemble(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // interface need to be integrated
   if (!IsIntegrated()) {
     if (gcomm_->getRank() == 0)
@@ -63,7 +57,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS(InterfaceT)::Mortar_Assemble(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // call assembly of 2D and 3D problems
   return Assemble_3D(D, M);
 }
@@ -79,12 +72,10 @@ MoertelT::InterfaceT<OrdinalType>::Mortar_Integrate(Tpetra_CrsMatrix& D,
 {
   bool ok = false;
 
-  //-------------------------------------------------------------------
   // time this process
   Tpetra_Time time(*lComm());
   time.ResetStartTime();
 
-  //-------------------------------------------------------------------
   if (!IsOneDimensional())
   {
     if (gcomm_->MyPID()==0)
@@ -94,7 +85,6 @@ MoertelT::InterfaceT<OrdinalType>::Mortar_Integrate(Tpetra_CrsMatrix& D,
     return false;
   }
 
-  //-------------------------------------------------------------------
   // interface needs to be complete
   if (!IsComplete())
   {
@@ -105,11 +95,9 @@ MoertelT::InterfaceT<OrdinalType>::Mortar_Integrate(Tpetra_CrsMatrix& D,
     return false;
   }
 
-  //-------------------------------------------------------------------
   // send all procs not member of this interface's intra-comm out of here
   if (!lComm()) return true;
 
-  //-------------------------------------------------------------------
   // interface needs to have a mortar side assigned
   if (MortarSide()==-1)
   {
@@ -120,7 +108,6 @@ MoertelT::InterfaceT<OrdinalType>::Mortar_Integrate(Tpetra_CrsMatrix& D,
     return false;
   }
 
-  //-------------------------------------------------------------------
   // interface segments need to have at least one function on the mortar side
   // and two functions on the slave side
   int mside = MortarSide();
@@ -145,16 +132,13 @@ MoertelT::InterfaceT<OrdinalType>::Mortar_Integrate(Tpetra_CrsMatrix& D,
       return false;
     }
 
-  //-------------------------------------------------------------------
   // do the integration of the master and slave side
   ok = Integrate_2D(M,D);
   if (!ok) return false;
 
-  //-------------------------------------------------------------------
   // set the flag that this interface has been successfully integrated
   isIntegrated_ = true;
 
-  //-------------------------------------------------------------------
   // time this process
   if (OutLevel()>5)
   {
@@ -176,12 +160,10 @@ MoertelT::InterfaceT<2, ST, LO, GO, N>::Mortar_Integrate_2D(
   bool ok    = false;
   intparams_ = intparams;
 
-  //-------------------------------------------------------------------
   // time this process
   Teuchos::Time time("Mortar_Integrate_2D");
   time.start(true);
 
-  //-------------------------------------------------------------------
   if (!IsOneDimensional()) {
     if (gcomm_->getRank() == 0)
       std::cout << "***ERR*** MoertelT::InterfaceT::Mortar_Integrate:\n"
@@ -192,7 +174,6 @@ MoertelT::InterfaceT<2, ST, LO, GO, N>::Mortar_Integrate_2D(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // interface needs to be complete
   if (!IsComplete()) {
     if (gcomm_->getRank() == 0)
@@ -204,11 +185,9 @@ MoertelT::InterfaceT<2, ST, LO, GO, N>::Mortar_Integrate_2D(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // send all procs not member of this interface's intra-comm out of here
   if (lcomm_ == Teuchos::null) return true;
 
-  //-------------------------------------------------------------------
   // interface needs to have a mortar side assigned
   if (MortarSide() == -1) {
     if (gcomm_->getRank() == 0)
@@ -220,7 +199,6 @@ MoertelT::InterfaceT<2, ST, LO, GO, N>::Mortar_Integrate_2D(
     return false;
   }
 
-  //-------------------------------------------------------------------
   // interface segments need to have at least one function on the mortar side
   // and two functions on the slave side
   int mside = MortarSide();
@@ -248,16 +226,13 @@ MoertelT::InterfaceT<2, ST, LO, GO, N>::Mortar_Integrate_2D(
       return false;
     }
 
-  //-------------------------------------------------------------------
   // do the integration of the master and slave side
   ok = Integrate_2D();
   if (!ok) return false;
 
-  //-------------------------------------------------------------------
   // set the flag that this interface has been successfully integrated
   isIntegrated_ = true;
 
-  //-------------------------------------------------------------------
   // time this process
   if (OutLevel() > 5) {
     std::cout << "MoertelT::Interface " << Id() << ": Integration on proc "

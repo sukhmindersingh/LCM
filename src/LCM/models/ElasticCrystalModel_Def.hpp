@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 // Author: Mario J. Juha (juham@rpi.edu)
 
@@ -15,7 +13,6 @@
 
 namespace LCM {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 ElasticCrystalModel<EvalT, Traits>::ElasticCrystalModel(
     Teuchos::ParameterList*              p,
@@ -165,7 +162,6 @@ ElasticCrystalModel<EvalT, Traits>::ElasticCrystalModel(
       p->get<bool>("Output Cauchy Stress", false));
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 ElasticCrystalModel<EvalT, Traits>::computeState(
@@ -297,6 +293,5 @@ ElasticCrystalModel<EvalT, Traits>::computeState(
     }  // end pt
   }    // end cell
 }
-//----------------------------------------------------------------------------
 
 }  // namespace LCM

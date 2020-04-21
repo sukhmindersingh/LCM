@@ -1,10 +1,7 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 // Simple mesh partitioning program
-//
 
 #include <MiniTensor.h>
 
@@ -40,9 +37,7 @@ typedef PHAL::AlbanyTraits                          Traits;
 typedef Sacado::mpl::apply<FadType, ScalarT>::type  DFadType;
 typedef Sacado::mpl::apply<FadType, DFadType>::type D2FadType;
 
-//
 // Spherical parametrization sweep
-//
 void
 spherical_sweep(minitensor::Tensor4<double, 3> const& CC)
 {
@@ -97,9 +92,7 @@ spherical_sweep(minitensor::Tensor4<double, 3> const& CC)
   return;
 }
 
-//
 // Stereographic parametrization sweep
-//
 void
 stereographic_sweep(minitensor::Tensor4<double, 3> const& CC)
 {
@@ -152,9 +145,7 @@ stereographic_sweep(minitensor::Tensor4<double, 3> const& CC)
   return;
 }
 
-//
 // Projective parametrization sweep
-//
 void
 projective_sweep(minitensor::Tensor4<double, 3> const& CC)
 {
@@ -213,9 +204,7 @@ projective_sweep(minitensor::Tensor4<double, 3> const& CC)
   return;
 }
 
-//
 // Tangent parametrization sweep
-//
 void
 tangent_sweep(minitensor::Tensor4<double, 3> const& CC)
 {
@@ -268,9 +257,7 @@ tangent_sweep(minitensor::Tensor4<double, 3> const& CC)
   return;
 }
 
-//
 // Cartesian parametrization sweep
-//
 void
 cartesian_sweep(minitensor::Tensor4<double, 3> const& CC)
 {
@@ -329,7 +316,6 @@ cartesian_sweep(minitensor::Tensor4<double, 3> const& CC)
   return;
 }
 
-//----------------------------------------------------------------------------
 minitensor::Vector<D2FadType, 3>
 spherical_get_normal(minitensor::Vector<D2FadType, 2>& parameters)
 {
@@ -341,7 +327,6 @@ spherical_get_normal(minitensor::Vector<D2FadType, 2>& parameters)
   return normal;
 }
 
-//----------------------------------------------------------------------------
 minitensor::Vector<D2FadType, 3>
 stereographic_get_normal(minitensor::Vector<D2FadType, 2>& parameters)
 {
@@ -354,7 +339,6 @@ stereographic_get_normal(minitensor::Vector<D2FadType, 2>& parameters)
   return normal;
 }
 
-//----------------------------------------------------------------------------
 minitensor::Vector<D2FadType, 3>
 projective_get_normal(minitensor::Vector<D2FadType, 3>& parameters)
 {
@@ -381,7 +365,6 @@ projective_get_normal(minitensor::Vector<D2FadType, 3>& parameters)
   return normal;
 }
 
-//----------------------------------------------------------------------------
 minitensor::Vector<D2FadType, 3>
 tangent_get_normal(minitensor::Vector<D2FadType, 2>& parameters)
 {
@@ -403,7 +386,6 @@ tangent_get_normal(minitensor::Vector<D2FadType, 2>& parameters)
   return normal;
 }
 
-//----------------------------------------------------------------------------
 minitensor::Vector<D2FadType, 3>
 cartesian_get_normal1(minitensor::Vector<D2FadType, 2>& parameters)
 {
@@ -532,7 +514,6 @@ spherical_newton_raphson(
 
 }  // Function end
 
-//----------------------------------------------------------------------------
 void
 stereographic_newton_raphson(
     minitensor::Tensor4<ScalarT, 3>& tangent,
@@ -636,7 +617,6 @@ stereographic_newton_raphson(
 
 }  // Function end
 
-//----------------------------------------------------------------------------
 void
 projective_newton_raphson(
     minitensor::Tensor4<ScalarT, 3>& tangent,
@@ -752,7 +732,6 @@ projective_newton_raphson(
 
 }  // Function end
 
-//----------------------------------------------------------------------------
 void
 tangent_newton_raphson(
     minitensor::Tensor4<ScalarT, 3>& tangent,
@@ -856,7 +835,6 @@ tangent_newton_raphson(
 
 }  // Function end
 
-//----------------------------------------------------------------------------
 void
 cartesian_newton_raphson(
     minitensor::Tensor4<ScalarT, 3>& tangent,
@@ -966,9 +944,7 @@ cartesian_newton_raphson(
 
 }  // Function end
 
-//
 // Simple tests for parametrizations of the bifurcation tensor.
-//
 int
 main(int ac, char* av[])
 {

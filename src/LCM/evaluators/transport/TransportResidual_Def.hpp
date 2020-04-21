@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <Phalanx_DataLayout.hpp>
 #include <typeinfo>
@@ -11,7 +9,6 @@
 
 namespace LCM {
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 TransportResidual<EvalT, Traits>::TransportResidual(
     Teuchos::ParameterList&              p,
@@ -127,7 +124,6 @@ TransportResidual<EvalT, Traits>::TransportResidual(
   this->setName("TransportResidual" + PHX::print<EvalT>());
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 TransportResidual<EvalT, Traits>::postRegistrationSetup(
@@ -174,7 +170,6 @@ TransportResidual<EvalT, Traits>::postRegistrationSetup(
       scalar_.get_view(), "XXX", num_cells_, num_pts_);
 }
 
-//----------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 TransportResidual<EvalT, Traits>::evaluateFields(

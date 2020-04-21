@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "ACEcommon.hpp"
 #include "ACEice.hpp"
@@ -362,35 +360,18 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   auto&&      exposure_time = exposure_time_(cell, pt);
 
   // Determine if erosion has occurred.
-  auto const erosion_rate = erosion_rate_;
   auto const element_size = element_size_;
-  bool const is_erodible  = erosion_rate > 0.0;
-  auto const critical_exposure_time =
-      is_erodible == true ? element_size / erosion_rate : 0.0;
-
+  auto const cell_bi      = have_cell_boundary_indicator_ == true ?
+                           *(cell_boundary_indicator_[cell]) :
+                           0.0;
+  auto const is_at_boundary = cell_bi == 1.0;
+  auto const is_erodible    = cell_bi == 2.0;
   auto const sea_level =
       sea_level_.size() > 0 ?
           interpolateVectors(time_, sea_level_, current_time) :
-          0.0;
-  bool const is_exposed_to_water = (height <= sea_level);
-  bool const is_at_boundary =
-      have_cell_boundary_indicator_ == true ?
-          static_cast<bool>(*(cell_boundary_indicator_[cell])) :
-          false;
+          -999.0;
 
-  bool const is_erodible_at_boundary = is_erodible && is_at_boundary;
-  if (is_erodible_at_boundary == true) {
-    if (is_exposed_to_water == true) { exposure_time += delta_time; }
-    if (exposure_time >= critical_exposure_time) {
-      // Disable temporarily
-      failed += 0.0;
-      exposure_time = 0.0;
-    }
-  }
-
-  //
   // Thermal calculation
-  //
 
   // Calculate the depth-dependent porosity
   // NOTE: The porosity does not change in time so this calculation only needs
@@ -402,26 +383,22 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   }
   porosity_(cell, pt) = porosity;
 
-  // A boundary cell (this is a hack): porosity = -1.0 (set in input deck)
-  bool const b_cell = porosity < 0.0;
-
   // Calculate the salinity of the grid cell
-  if (is_at_boundary == true) {
-    RealType constexpr cell_half_width    = 0.1;
-    RealType constexpr cell_exposed_area  = 0.04;
-    RealType constexpr cell_volume        = 0.008;
-    RealType constexpr per_exposed_length = cell_exposed_area / cell_volume;
-    RealType const factor = per_exposed_length * salt_enhanced_D_;
+  if ((is_at_boundary == true) && (height <= sea_level)) {
+    RealType const cell_half_width    = 0.5 * element_size;
+    RealType const cell_exposed_area  = element_size * element_size;
+    RealType const cell_volume        = cell_exposed_area * element_size;
+    RealType const per_exposed_length = 1.0 / element_size;
+    RealType const factor             = per_exposed_length * salt_enhanced_D_;
     ScalarT const  zero_sal(0.0);
     ScalarT const  sal_curr  = bluff_salinity_(cell, pt);
     ScalarT        ocean_sal = salinity_base_;
     if (ocean_salinity_.size() > 0) {
       ocean_sal = interpolateVectors(time_, ocean_salinity_, current_time);
     }
-    ScalarT const sal_diff = ocean_sal - sal_curr;
-    ScalarT const sal_grad = sal_diff / cell_half_width;
-    // TODO: factor == 0, should be a factor here but leads to Sacado FPE (!!??)
-    ScalarT const sal_update = sal_grad * delta_time;
+    ScalarT const sal_diff   = ocean_sal - sal_curr;
+    ScalarT const sal_grad   = sal_diff / cell_half_width;
+    ScalarT const sal_update = sal_grad * delta_time * factor;
     ScalarT       sal_trial  = sal_curr + sal_update;
     if (sal_trial < zero_sal) sal_trial = zero_sal;
     if (sal_trial > ocean_sal) sal_trial = ocean_sal;
@@ -457,7 +434,7 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   // b = shift to left or right (+ is left, - is right)
   /*
   ScalarT W = 4.0;  // constant value
-  //if (freezing_curve_width_.size() > 0) {
+  // if (freezing_curve_width_.size() > 0) {
   //  W = interpolateVectors(
   //      z_above_mean_sea_level_, freezing_curve_width_, height);
   //}
@@ -466,7 +443,7 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   ScalarT const arg   = -(8.0 / W) * (Tdiff + (f_shift_ * W));
   ScalarT       icurr{1.0};
   ScalarT       dfdT{0.0};
-  auto const    tol = 45.0;
+  auto const    tol = 709.0;
 
   // Update freeze curve slope and ice saturation
   if (arg < -tol) {
@@ -491,32 +468,27 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
     }
   }
   */
-  
+
   // BEGIN NEW CURVE //
   ScalarT const Tdiff = Tcurr - Tmelt;
-  
+
   RealType const A = 0.0;
   RealType const G = 1.0;
   RealType const C = 1.0;
   RealType const Q = 0.001;
   RealType const B = 10.0;
   RealType const v = 5.0;  // assume its like sand
-  
+
   ScalarT const qebt = Q * std::exp(-B * Tdiff);
-  
-  ScalarT icurr = A + ((G - A) / (pow(C + qebt,1.0/v)));
-  ScalarT dfdT = ((B * Q * (G - A)) * pow(C + qebt,-1.0/v) + (qebt / Q)) / (v * (C + qebt));
+
+  ScalarT icurr = 1.0 - (A + ((G - A) / (pow(C + qebt,1.0/v))));
+  ScalarT dfdT = -1.0 * ((B * Q * (G - A)) * pow(C + qebt,-1.0/v) + (qebt / Q)) / (v *
+  (C + qebt));
   // END NEW CURVE //
   
 
   // Update the water saturation
   ScalarT wcurr = 1.0 - icurr;
-
-  // Correct ice/water saturation if b_cell
-  if (b_cell == true) {
-    icurr = 0.0;
-    wcurr = 0.0;
-  }
 
   // Update the effective material density
   density_(cell, pt) =
@@ -538,9 +510,7 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   ice_saturation_(cell, pt)   = icurr;
   water_saturation_(cell, pt) = wcurr;
 
-  //
   // Mechanical calculation
-  //
 
   // Compute effective yield strength
   Y = icurr * Y;
@@ -646,14 +616,10 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
     }
   }
 
-  //
   // Determine if critical stress is exceeded
-  //
   if (yielded == true) failed += 1.0;
 
-  //
   // Determine if kinematic failure occurred
-  //
   auto const critical_angle = critical_angle_;
   if (critical_angle > 0.0) {
     auto const Fval   = Sacado::Value<decltype(F)>::eval(F);

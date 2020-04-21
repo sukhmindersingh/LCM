@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "Albany_Macros.hpp"
 #include "Albany_ThyraUtils.hpp"
@@ -20,8 +18,6 @@ EquilibriumConcentrationBC_Base<EvalT, Traits>::EquilibriumConcentrationBC_Base(
       pressure_fac_(p.get<RealType>("Pressure Factor"))
 {
 }
-//------------------------------------------------------------------------------
-//
 template <typename EvalT, typename Traits>
 void
 EquilibriumConcentrationBC_Base<EvalT, Traits>::computeBCs(
@@ -30,17 +26,13 @@ EquilibriumConcentrationBC_Base<EvalT, Traits>::computeBCs(
 {
   Cval = applied_conc_ * std::exp(pressure_fac_ * pressure);
 }
-//------------------------------------------------------------------------------
 // Specialization: Residual
-//
 template <typename Traits>
 EquilibriumConcentrationBC<PHAL::AlbanyTraits::Residual, Traits>::
     EquilibriumConcentrationBC(Teuchos::ParameterList& p)
     : EquilibriumConcentrationBC_Base<PHAL::AlbanyTraits::Residual, Traits>(p)
 {
 }
-//------------------------------------------------------------------------------
-//
 template <typename Traits>
 void
 EquilibriumConcentrationBC<PHAL::AlbanyTraits::Residual, Traits>::
@@ -69,16 +61,13 @@ EquilibriumConcentrationBC<PHAL::AlbanyTraits::Residual, Traits>::
     f_nonconstView[cunk] = x_constView[cunk] - Cval;
   }
 }
-//------------------------------------------------------------------------------
 // Specialization: Jacobian
-//
 template <typename Traits>
 EquilibriumConcentrationBC<PHAL::AlbanyTraits::Jacobian, Traits>::
     EquilibriumConcentrationBC(Teuchos::ParameterList& p)
     : EquilibriumConcentrationBC_Base<PHAL::AlbanyTraits::Jacobian, Traits>(p)
 {
 }
-//------------------------------------------------------------------------------
 template <typename Traits>
 void
 EquilibriumConcentrationBC<PHAL::AlbanyTraits::Jacobian, Traits>::

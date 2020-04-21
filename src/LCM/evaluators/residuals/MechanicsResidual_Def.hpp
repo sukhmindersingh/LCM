@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include <MiniTensor.h>
 #include <MiniTensor_Mechanics.h>
@@ -18,7 +16,6 @@
 
 namespace LCM {
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 MechanicsResidual<EvalT, Traits>::MechanicsResidual(
     Teuchos::ParameterList&              p,
@@ -74,7 +71,6 @@ MechanicsResidual<EvalT, Traits>::MechanicsResidual(
   if (def_grad_rc_.init(p, "F")) this->addDependentField(def_grad_rc_());
 }
 
-//------------------------------------------------------------------------------
 template <typename EvalT, typename Traits>
 void
 MechanicsResidual<EvalT, Traits>::postRegistrationSetup(
@@ -95,7 +91,6 @@ MechanicsResidual<EvalT, Traits>::postRegistrationSetup(
 
 // ***************************************************************************
 // Kokkos kernels
-//
 template <typename EvalT, typename Traits>
 KOKKOS_INLINE_FUNCTION void
 MechanicsResidual<EvalT, Traits>::compute_Stress(int const i) const

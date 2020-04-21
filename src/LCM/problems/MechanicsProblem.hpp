@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #ifndef MECHANICSPROBLEM_HPP
 #define MECHANICSPROBLEM_HPP
@@ -24,7 +22,6 @@ static int dir_count = 0;  // counter for registration of dirichlet_field
 
 namespace Albany {
 
-//------------------------------------------------------------------------------
 ///
 /// \brief Definition for the Mechanics Problem
 ///
@@ -131,8 +128,6 @@ class MechanicsProblem : public AbstractProblem
   void
   constructNeumannEvaluators(Teuchos::RCP<MeshSpecsStruct> const& meshSpecs);
 
-  //----------------------------------------------------------------------------
-
  private:
   ///
   /// Private to prohibit copying
@@ -144,8 +139,6 @@ class MechanicsProblem : public AbstractProblem
   ///
   MechanicsProblem&
   operator=(const MechanicsProblem&);
-
-  //----------------------------------------------------------------------------
 
  protected:
   ///

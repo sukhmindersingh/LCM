@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #include "Moertel_InterfaceT.hpp"
 #include "Moertel_NodeT.hpp"
@@ -1337,8 +1335,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS_1A(OverlapT, IFace)::Triangulation()
       Teuchos::RCP<MoertelT::MOERTEL_TEMPLATE_CLASS(NodeT)> node =
           points[i]->Node();
 
-      //-----------------
-      //
       // GAH - found by kimliegeois
       // Moertel occasionally trys to project a slave segment on a master
       // segment which can be perpendicular. Compute the dot product of the
@@ -1358,7 +1354,6 @@ bool MoertelT::MOERTEL_TEMPLATE_CLASS_1A(OverlapT, IFace)::Triangulation()
 
         if (mag_projection <= Projection_Length_Epsilon) return false;
       }
-      //-----------------
 
       projector.ProjectNodetoSegment_NodalNormal(*node, mseg_, mxi, gap);
       // create a projected node and set it in node

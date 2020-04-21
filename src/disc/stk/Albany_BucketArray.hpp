@@ -1,8 +1,6 @@
-//
 // Albany 3.0: Copyright 2016 National Technology & Engineering Solutions of
 // Sandia, LLC (NTESS). This Software is released under the BSD license detailed
 // in the file license.txt in the top-level Albany directory.
-//
 
 #ifndef ALBANY_BUCKETARRAY_HPP
 #define ALBANY_BUCKETARRAY_HPP
@@ -115,7 +113,6 @@ get_size<stk::mesh::Cartesian>(stk::mesh::Bucket const& b)
   return b.mesh().mesh_meta_data().spatial_dimension();
 }
 
-//----------------------------------------------------------------------
 /** \brief  \ref stk::mesh::Field "Field" data \ref shards::Array "Array"
  *          for a given array field and bucket
  */
