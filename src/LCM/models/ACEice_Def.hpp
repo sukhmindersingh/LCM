@@ -468,7 +468,7 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
     }
   }
   */
-
+  
   // BEGIN NEW CURVE //
   ScalarT const Tdiff = Tcurr - Tmelt;
 
@@ -479,11 +479,36 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   RealType const B = 10.0;
   RealType const v = 5.0;  // assume its like sand
 
+  ScalarT       icurr{1.0};
+  ScalarT       dfdT{0.0};
+  auto const    tol  = 709.0;
+  ScalarT const arg  = -B * Tdiff;
   ScalarT const qebt = Q * std::exp(-B * Tdiff);
-
-  ScalarT icurr = 1.0 - (A + ((G - A) / (pow(C + qebt,1.0/v))));
-  ScalarT dfdT = -1.0 * ((B * Q * (G - A)) * pow(C + qebt,-1.0/v) + (qebt / Q)) / (v *
-  (C + qebt));
+  
+  if (arg < -tol) {
+    dfdT  = 0.0;
+    icurr = 0.0;
+  } else if (arg > tol) {
+    dfdT  = 0.0;
+    icurr = 1.0;
+  } else {
+    auto const    eps = minitensor::machine_epsilon<RealType>();
+    if (qebt < eps) {  // (C + et) ~ C :: occurs when totally melted
+      dfdT  = 0.0;
+      icurr = 1.0 - (A + ((G - A) / (pow(C, 1.0/v))));
+    } else if (1.0 / qebt < eps) {  // (C + et) ~ et :: occurs in deep frozen state
+      dfdT  = -1.0 * B * pow(qebt, -1.0/v) * (G - A) / v;
+      icurr = 1.0 - (A + ((G - A) / (pow(qebt, 1.0/v))));
+    } else {  // occurs when near melting temperature
+      icurr = 1.0 - (A + ((G - A) / (pow(C + qebt, 1.0/v))));
+      dfdT = -1.0 * ((B * Q * (G - A)) * pow(C + qebt, -1.0/v) * 
+         (qebt / Q)) / (v * (C + qebt));
+    }
+  }
+  
+  std::min(icurr,1.0);
+  std::max(icurr,0.0);
+  
   // END NEW CURVE //
   
 
@@ -499,8 +524,8 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
                                          (water_heat_capacity_ * wcurr));
 
   // Update the effective material thermal conductivity
-  thermal_cond_(cell, pt) = pow(ice_thermal_cond_, (icurr * porosity)) *
-                            pow(water_thermal_cond_, (wcurr * porosity));
+  thermal_cond_(cell, pt) = porosity * ((ice_thermal_cond_ * icurr) +
+                                         (water_thermal_cond_ * wcurr));
 
   // Update the material thermal inertia term
   thermal_inertia_(cell, pt) = (density_(cell, pt) * heat_capacity_(cell, pt)) -

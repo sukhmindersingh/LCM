@@ -504,12 +504,14 @@ ACEpermafrostMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
     }
   }
   */
+  
   bool sediment_given{false};
   if ((sand_from_file_.size() > 0) && (clay_from_file_.size() > 0) &&
       (silt_from_file_.size() > 0) && (peat_from_file_.size() > 0)) {
     sediment_given = true;
   }
 
+  
   // BEGIN NEW CURVE //
   ScalarT const Tdiff = Tcurr - Tmelt;
 
@@ -533,13 +535,38 @@ ACEpermafrostMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
         (clay_frac * 70.0);
   }
 
+  ScalarT       icurr{1.0};
+  ScalarT       dfdT{0.0};
+  auto const    tol  = 709.0;
+  ScalarT const arg  = -B * Tdiff;
   ScalarT const qebt = Q * std::exp(-B * Tdiff);
-
-  ScalarT icurr = 1.0 - (A + ((G - A) / (pow(C + qebt, 1.0/v))));
-  ScalarT dfdT = -1.0 * ((B * Q * (G - A)) * pow(C + qebt, -1.0/v) + (qebt / Q)) / (v *
-  (C + qebt));
+  
+  if (arg < -tol) {
+    dfdT  = 0.0;
+    icurr = 0.0;
+  } else if (arg > tol) {
+    dfdT  = 0.0;
+    icurr = 1.0;
+  } else {
+    auto const    eps = minitensor::machine_epsilon<RealType>();
+    if (qebt < eps) {  // (C + et) ~ C :: occurs when totally melted
+      dfdT  = 0.0;
+      icurr = 1.0 - (A + ((G - A) / (pow(C, 1.0/v))));
+    } else if (1.0 / qebt < eps) {  // (C + et) ~ et :: occurs in deep frozen state
+      dfdT  = -1.0 * B * pow(qebt, -1.0/v) * (G - A) / v;
+      icurr = 1.0 - (A + ((G - A) / (pow(qebt, 1.0/v))));
+    } else {  // occurs when near melting temperature
+      icurr = 1.0 - (A + ((G - A) / (pow(C + qebt, 1.0/v))));
+      dfdT = -1.0 * ((B * Q * (G - A)) * pow(C + qebt, -1.0/v) * 
+         (qebt / Q)) / (v * (C + qebt));
+    }
+  }
+  
+  std::min(icurr,1.0);
+  std::max(icurr,0.0);
+  
   // END NEW CURVE //
- 
+  
 
   // Update the water saturation
   ScalarT wcurr = 1.0 - icurr;
@@ -562,11 +589,16 @@ ACEpermafrostMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
     // Gnatowski, Tomasz (2016) Thermal properties of degraded lowland
     // peat-moorsh soils, EGU General Assembly 2016, held 17-22 April, 2016 in
     // Vienna Austria, id. EPSC2016-8105 --> peat Cp value Cp values in [J/kg/K]
+    //calc_soil_heat_capacity = (0.7e3 * sand_frac) + (0.6e3 * clay_frac) +
+    //                          (0.7e3 * silt_frac) + (1.9e3 * peat_frac);
     calc_soil_heat_capacity = (0.7e3 * sand_frac) + (0.6e3 * clay_frac) +
-                              (0.7e3 * silt_frac) + (1.9e3 * peat_frac);
+                              (0.7e3 * silt_frac) + (1.93e3 * peat_frac);
     // K values in [W/K/m]
     calc_soil_thermal_cond = (8.0 * sand_frac) + (0.4 * clay_frac) +
                              (4.9 * silt_frac) + (0.08 * peat_frac);
+    //calc_soil_thermal_cond = (16.0 * sand_frac) + (0.8 * clay_frac) +
+    //                         (10.0 * silt_frac) + (0.8 * peat_frac);
+                             
     // Rho values in [kg/m3]
     // Peat density from Emily Bristol
     calc_soil_density =
@@ -598,13 +630,13 @@ ACEpermafrostMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
 
   // Update the effective material thermal conductivity
   if (sediment_given == true) {
-    thermal_cond_(cell, pt) = pow(ice_thermal_cond_, (icurr * porosity)) *
-                              pow(water_thermal_cond_, (wcurr * porosity)) *
-                              pow(calc_soil_thermal_cond, (1.0 - porosity));
+    thermal_cond_(cell, pt) = (porosity * ((ice_thermal_cond_ * icurr) +
+                                            (water_thermal_cond_ * wcurr))) +
+                               ((1.0 - porosity) * calc_soil_thermal_cond);
   } else {
-    thermal_cond_(cell, pt) = pow(ice_thermal_cond_, (icurr * porosity)) *
-                              pow(water_thermal_cond_, (wcurr * porosity)) *
-                              pow(soil_thermal_cond_, (1.0 - porosity));
+    thermal_cond_(cell, pt) = (porosity * ((ice_thermal_cond_ * icurr) +
+                                            (water_thermal_cond_ * wcurr))) +
+                               ((1.0 - porosity) * soil_thermal_cond_);
   }
 
   // Update the material thermal inertia term
