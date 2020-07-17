@@ -18,8 +18,7 @@
 #include "PHAL_Workset.hpp"
 #include "SolutionSniffer.hpp"
 
-static int dir_count               = 0;  // counter for registration of dirichlet_field
-static int ace_ice_sat_field_count = 0;
+static int dir_count = 0;  // counter for registration of dirichlet_field
 
 namespace Albany {
 
@@ -291,9 +290,6 @@ class MechanicsProblem : public AbstractProblem
 
   /// Topology adaptation (adaptive insertion)
   bool have_topmod_adaptation_{false};
-
-  /// Is a coupled sequential ACE thermo-mechanical problem
-  bool is_ace_sequential_thermomechanical_{false};
 
   /// Data layouts
   Teuchos::RCP<Layouts> dl_;

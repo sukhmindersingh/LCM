@@ -1580,6 +1580,21 @@ STKDiscretization::computeWorksetInfoBoundaryIndicators()
     }
   }
 
+  qp_ice_saturation.resize(num_cell_buckets);
+  auto const has_ice_saturation = field_container.hasQPIceSaturationField();
+  if (has_ice_saturation == true) {
+    auto* cell_field = field_container.getQPIceSaturation();
+    for (auto b = 0; b < num_cell_buckets; ++b) {
+      auto& cell_bucket = *cell_buckets[b];
+      qp_ice_saturation[b].resize(cell_bucket.size());
+      for (auto i = 0; i < cell_bucket.size(); ++i) {
+        auto cell               = cell_bucket[i];
+        qp_ice_saturation[b][i] = static_cast<double*>(stk::mesh::field_data(*cell_field, cell));
+        ALBANY_TRACE("*** BUCKET : " << b << " INDEX : " << i << " IS : " << qp_ice_saturation[b][i][0] << "\n");
+      }
+    }
+  }
+
   auto const& face_buckets     = bulkData.get_buckets(stk::topology::FACE_RANK, local_part);
   auto const  num_face_buckets = face_buckets.size();
   auto const  has_face         = field_container.hasFaceBoundaryIndicatorField();

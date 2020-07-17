@@ -91,7 +91,7 @@ MechanicsProblem::MechanicsProblem(
     ALBANY_ASSERT(have_both_ace == true, "Cannot have ACE temperature without its equation");
   }
 
-  is_ace_sequential_thermomechanical_ = params->isParameter("ACE Sequential Thermomechanical");
+  bool const is_ace_sequential_thermomechanical = params->isParameter("ACE Sequential Thermomechanical");
 
   // Compute number of equations
   int num_eq{0};
@@ -218,6 +218,7 @@ MechanicsProblem::MechanicsProblem(
     // TODO: Layout for edge does not exist yet
     requirements.push_back("node_boundary_indicator");
   }
+  if (is_ace_sequential_thermomechanical == true) { requirements.push_back("ACE Ice Saturation"); }
 }  // MechanicsProblem
 
 void

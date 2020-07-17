@@ -696,16 +696,19 @@ Application::loadWorksetBucketInfo(PHAL::Workset& workset, int const& ws, std::s
   auto const& face_boundary_indicator = disc->getFaceBoundaryIndicator();
   auto const& edge_boundary_indicator = disc->getEdgeBoundaryIndicator();
   auto const& node_boundary_indicator = disc->getNodeBoundaryIndicator();
+  auto const& qp_ice_saturation       = disc->getQPIceSaturation();
 
-  auto const has_cell = cell_boundary_indicator != Teuchos::null && ws < cell_boundary_indicator.size();
-  auto const has_face = face_boundary_indicator != Teuchos::null && ws < face_boundary_indicator.size();
-  auto const has_edge = edge_boundary_indicator != Teuchos::null && ws < edge_boundary_indicator.size();
-  auto const has_node = node_boundary_indicator.size() > 0;
+  auto const has_cell           = cell_boundary_indicator != Teuchos::null && ws < cell_boundary_indicator.size();
+  auto const has_face           = face_boundary_indicator != Teuchos::null && ws < face_boundary_indicator.size();
+  auto const has_edge           = edge_boundary_indicator != Teuchos::null && ws < edge_boundary_indicator.size();
+  auto const has_node           = node_boundary_indicator.size() > 0;
+  auto const has_ice_saturation = qp_ice_saturation != Teuchos::null && ws < qp_ice_saturation.size();
 
   if (has_cell == true) { workset.cell_boundary_indicator = cell_boundary_indicator[ws]; }
   if (has_face == true) { workset.face_boundary_indicator = face_boundary_indicator[ws]; }
   if (has_edge == true) { workset.edge_boundary_indicator = edge_boundary_indicator[ws]; }
   if (has_node == true) { workset.node_boundary_indicator = node_boundary_indicator; }
+  if (has_ice_saturation == true) { workset.qp_ice_saturation = qp_ice_saturation[ws]; }
 
   workset.numCells             = wsElNodeEqID[ws].extent(0);
   workset.wsElNodeEqID         = wsElNodeEqID[ws];

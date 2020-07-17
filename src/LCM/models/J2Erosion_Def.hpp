@@ -53,7 +53,6 @@ J2ErosionKernel<EvalT, Traits>::J2ErosionKernel(
   setDependentField("Elastic Modulus", dl->qp_scalar);
   setDependentField("Yield Strength", dl->qp_scalar);
   setDependentField("Hardening Modulus", dl->qp_scalar);
-  setDependentField("ACE Ice Saturation", dl->qp_scalar);
   setDependentField("Delta Time", dl->workset_scalar);
 
   // define the evaluated fields
@@ -101,14 +100,13 @@ J2ErosionKernel<EvalT, Traits>::init(
   std::string J_string            = field_name_map_["J"];
 
   // extract dependent MDFields
-  def_grad_           = *dep_fields[F_string];
-  J_                  = *dep_fields[J_string];
-  poissons_ratio_     = *dep_fields["Poissons Ratio"];
-  elastic_modulus_    = *dep_fields["Elastic Modulus"];
-  yield_strength_     = *dep_fields["Yield Strength"];
-  hardening_modulus_  = *dep_fields["Hardening Modulus"];
-  delta_time_         = *dep_fields["Delta Time"];
-  ace_ice_saturation_ = *dep_fields["ACE Ice Saturation"];
+  def_grad_          = *dep_fields[F_string];
+  J_                 = *dep_fields[J_string];
+  poissons_ratio_    = *dep_fields["Poissons Ratio"];
+  elastic_modulus_   = *dep_fields["Elastic Modulus"];
+  yield_strength_    = *dep_fields["Yield Strength"];
+  hardening_modulus_ = *dep_fields["Hardening Modulus"];
+  delta_time_        = *dep_fields["Delta Time"];
 
   // extract evaluated MDFields
   stress_     = *eval_fields[cauchy_string];
@@ -131,12 +129,16 @@ J2ErosionKernel<EvalT, Traits>::init(
   auto& mesh_struct             = *(stk_disc.getSTKMeshStruct());
   auto& field_cont              = *(mesh_struct.getFieldContainer());
   have_cell_boundary_indicator_ = field_cont.hasCellBoundaryIndicatorField();
+  have_qp_ice_saturation_       = field_cont.hasQPIceSaturationField();
 
   if (have_cell_boundary_indicator_ == true) {
     cell_boundary_indicator_ = workset.cell_boundary_indicator;
     ALBANY_ASSERT(cell_boundary_indicator_.is_null() == false);
   }
-
+  if (have_qp_ice_saturation_ == true) {
+    qp_ice_saturation_ = workset.qp_ice_saturation;
+    ALBANY_ASSERT(qp_ice_saturation_.is_null() == false);
+  }
   current_time_ = workset.current_time;
 
   auto const num_cells = workset.numCells;
@@ -239,22 +241,24 @@ J2ErosionKernel<EvalT, Traits>::operator()(int cell, int pt) const
   auto const height       = Sacado::Value<ScalarT>::eval(coords(cell, pt, 2));
   auto const current_time = current_time_;
 
-  ScalarT const E              = elastic_modulus_(cell, pt);
-  ScalarT const nu             = poissons_ratio_(cell, pt);
-  ScalarT const kappa          = E / (3.0 * (1.0 - 2.0 * nu));
-  ScalarT const mu             = E / (2.0 * (1.0 + nu));
-  ScalarT const K              = hardening_modulus_(cell, pt);
-  ScalarT const J1             = J_(cell, pt);
-  ScalarT const Jm23           = 1.0 / std::cbrt(J1 * J1);
-  ScalarT const ice_saturation = ace_ice_saturation_(cell, pt);
-  ScalarT       Y              = yield_strength_(cell, pt);
+  ScalarT const E     = elastic_modulus_(cell, pt);
+  ScalarT const nu    = poissons_ratio_(cell, pt);
+  ScalarT const kappa = E / (3.0 * (1.0 - 2.0 * nu));
+  ScalarT const mu    = E / (2.0 * (1.0 + nu));
+  ScalarT const K     = hardening_modulus_(cell, pt);
+  ScalarT const J1    = J_(cell, pt);
+  ScalarT const Jm23  = 1.0 / std::cbrt(J1 * J1);
+  ScalarT       Y     = yield_strength_(cell, pt);
 
-  auto&& delta_time = delta_time_(0);
-  auto&& failed     = failed_(cell, 0);
+  auto const ice_saturation = have_qp_ice_saturation_ == true ? qp_ice_saturation_[cell][pt] : 1.0;
+  auto&&     delta_time     = delta_time_(0);
+  auto&&     failed         = failed_(cell, 0);
 
   auto const porosity = porosity_from_file_.size() > 0 ?
                             interpolateVectors(z_above_mean_sea_level_, porosity_from_file_, height) :
                             bulk_porosity_;
+
+  ALBANY_ASSERT(ice_saturation == 0.0, "**** CELL : " << cell << " PT : " << pt << " IS : " << ice_saturation << "\n");
 
   // Compute effective yield strength
   Y = (1.0 - porosity) * soil_yield_strength_ + porosity * ice_saturation * Y;

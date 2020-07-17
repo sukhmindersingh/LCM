@@ -76,6 +76,7 @@ class AbstractSTKFieldContainer : public AbstractFieldContainer
   {
     return coordinates_field3d;
   }
+
   VectorFieldType*
   getCoordinatesField3d()
   {
@@ -87,55 +88,72 @@ class AbstractSTKFieldContainer : public AbstractFieldContainer
   {
     return coordinates_field;
   }
+
   VectorFieldType*
   getCoordinatesField()
   {
     return coordinates_field;
   }
+
   IntScalarFieldType*
   getProcRankField()
   {
     return proc_rank_field;
   }
+
   IntScalarFieldType*
   getRefineField()
   {
     return refine_field;
   }
+
   IntScalarFieldType*
   getFailureState(stk::topology::rank_t rank)
   {
     return failure_state[rank];
   }
+
   stk::mesh::FieldBase*
   getCellBoundaryIndicator()
   {
     ALBANY_ASSERT(cell_boundary_indicator != nullptr);
     return cell_boundary_indicator;
   }
+
   stk::mesh::FieldBase*
   getFaceBoundaryIndicator()
   {
     ALBANY_ASSERT(face_boundary_indicator != nullptr);
     return face_boundary_indicator;
   }
+
   stk::mesh::FieldBase*
   getEdgeBoundaryIndicator()
   {
     ALBANY_ASSERT(edge_boundary_indicator != nullptr);
     return edge_boundary_indicator;
   }
+
   stk::mesh::FieldBase*
   getNodeBoundaryIndicator()
   {
     ALBANY_ASSERT(node_boundary_indicator != nullptr);
     return node_boundary_indicator;
   }
+
+  stk::mesh::FieldBase*
+  getQPIceSaturation()
+  {
+    ALBANY_ASSERT(qp_ice_saturation != nullptr);
+    return qp_ice_saturation;
+  }
+
   SphereVolumeFieldType*
   getSphereVolumeField()
   {
     return sphereVolume_field;
   }
+
   stk::mesh::FieldBase*
   getLatticeOrientationField()
   {
@@ -223,6 +241,8 @@ class AbstractSTKFieldContainer : public AbstractFieldContainer
   hasEdgeBoundaryIndicatorField() const = 0;
   virtual bool
   hasNodeBoundaryIndicatorField() const = 0;
+  virtual bool
+  hasQPIceSaturationField() const = 0;
 
   std::map<std::string, double>&
   getTime()
@@ -300,6 +320,7 @@ class AbstractSTKFieldContainer : public AbstractFieldContainer
   stk::mesh::FieldBase* face_boundary_indicator;
   stk::mesh::FieldBase* edge_boundary_indicator;
   stk::mesh::FieldBase* node_boundary_indicator;
+  stk::mesh::FieldBase* qp_ice_saturation;
 
   // Required for Peridynamics in LCM
   SphereVolumeFieldType* sphereVolume_field;

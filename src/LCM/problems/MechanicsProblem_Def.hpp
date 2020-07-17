@@ -311,21 +311,27 @@ MechanicsProblem::constructEvaluators(
   auto find_node_boundary_indicator =
       std::find(this->requirements.begin(), this->requirements.end(), "node_boundary_indicator");
 
+  auto find_qp_ice_saturation = std::find(this->requirements.begin(), this->requirements.end(), "ACE Ice Saturation");
+
   if (find_cell_boundary_indicator != this->requirements.end()) {
     auto entity = StateStruct::ElemData;
-
     stateMgr.registerStateVariable("cell_boundary_indicator", dl_->cell_scalar, meshSpecs.ebName, false, &entity);
   }
+
   if (find_face_boundary_indicator != this->requirements.end()) {
     auto entity = StateStruct::ElemData;
-
     stateMgr.registerStateVariable("face_boundary_indicator", dl_->face_scalar, meshSpecs.ebName, false, &entity);
   }
+
   // TODO: Layout for edge does not exist yet
   if (find_node_boundary_indicator != this->requirements.end()) {
     auto entity = StateStruct::ElemData;
-
     stateMgr.registerStateVariable("node_boundary_indicator", dl_->node_scalar, meshSpecs.ebName, false, &entity);
+  }
+
+  if (find_qp_ice_saturation != this->requirements.end()) {
+    auto entity = StateStruct::ElemData;
+    stateMgr.registerStateVariable("ACE Ice Saturation", dl_->qp_scalar, meshSpecs.ebName, false, &entity);
   }
 
   // Define Field Names
@@ -781,26 +787,6 @@ MechanicsProblem::constructEvaluators(
     fm0.template registerEvaluator<EvalT>(ev);
   }
 
-  // Register ACE Ice Saturation
-  // IKT: the if-statement a hack to prevent redundant registration of params
-  // similar to dirichlet_field - I still have no idea why it's needed for mechanics problem...
-  if (is_ace_sequential_thermomechanical_ == true && ace_ice_sat_field_count == 0) {
-    std::string                          stateName = "ACE Ice Saturation";
-    Albany::StateStruct::MeshFieldEntity entity    = Albany::StateStruct::QuadPoint;
-    p = stateMgr.registerStateVariable(stateName, dl_->qp_scalar, eb_name, true, &entity, "");
-    ace_ice_sat_field_count++;
-  }
-
-  if (is_ace_sequential_thermomechanical_ == true) {
-    // Load parameter using its field name
-    std::string fieldName = "ACE Ice Saturation";
-    p->set<std::string>("Field Name", fieldName);
-    p->set<std::string>("State Name", "ACE Ice Saturation");
-    p->set<Teuchos::RCP<PHX::DataLayout>>("State Field Layout", dl_->qp_scalar);
-    ev = Teuchos::rcp(new PHAL::LoadStateField<EvalT, PHAL::AlbanyTraits>(*p));
-    fm0.template registerEvaluator<EvalT>(ev);
-  }
-
   if ((have_pore_pressure_eq_ == true) || (have_pore_pressure_ == true)) {
     Teuchos::RCP<Teuchos::ParameterList> p = Teuchos::rcp(new Teuchos::ParameterList("Save Pore Pressure"));
 
@@ -936,12 +922,6 @@ MechanicsProblem::constructEvaluators(
     if (have_ace_temperature_ == true) {
       p->set<std::string>("ACE Temperature Name", ace_temperature);
       param_list.set<bool>("Have ACE Temperature", true);
-    }
-
-    param_list.set<bool>("Have ACE Ice Saturation", false);
-    if (is_ace_sequential_thermomechanical_ == true) {
-      p->set<std::string>("ACE Ice Saturation QP Variable Name", "ACE Ice Saturation");
-      param_list.set<bool>("Have ACE Ice Saturation", true);
     }
 
     param_list.set<bool>("Have Total Concentration", false);
@@ -1424,9 +1404,6 @@ MechanicsProblem::constructEvaluators(
       p->set<std::string>("Acceleration Name", "Acceleration");
       p->set<std::string>("Body Force Name", "Body Force");
       p->set<std::string>("Analytic Mass Name", "Analytic Mass Residual");
-      if (is_ace_sequential_thermomechanical_ == true) {
-        p->set<std::string>("ACE Ice Saturation QP Variable Name", "ACE Ice Saturation");
-      }
       bool const use_analytic_mass = material_db_->getElementBlockParam<bool>(eb_name, "Use Analytic Mass", false);
       p->set<bool>("Use Analytic Mass", use_analytic_mass);
       if (Teuchos::nonnull(rc_mgr_)) {

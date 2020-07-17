@@ -225,7 +225,7 @@ class ACEThermoMechanical : public Thyra::ResponseOnlyModelEvaluatorBase<ST>
   enum PROB_TYPE
   {
     THERMAL,
-    MECHANICS
+    MECHANICAL
   };
 
   // std::vector mapping subdomain number to PROB_TYPE;

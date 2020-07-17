@@ -32,11 +32,13 @@ class MultiSTKFieldContainer : public GenericSTKFieldContainer<Interleaved>
   {
     return haveResidual;
   }
+
   bool
   hasSphereVolumeField() const
   {
     return buildSphereVolume;
   }
+
   bool
   hasLatticeOrientationField() const
   {
@@ -48,20 +50,29 @@ class MultiSTKFieldContainer : public GenericSTKFieldContainer<Interleaved>
   {
     return build_cell_boundary_indicator;
   }
+
   bool
   hasFaceBoundaryIndicatorField() const
   {
     return build_face_boundary_indicator;
   }
+
   bool
   hasEdgeBoundaryIndicatorField() const
   {
     return build_edge_boundary_indicator;
   }
+
   bool
   hasNodeBoundaryIndicatorField() const
   {
     return build_node_boundary_indicator;
+  }
+
+  bool
+  hasQPIceSaturationField() const
+  {
+    return build_qp_ice_saturation;
   }
 
   void
@@ -147,6 +158,7 @@ class MultiSTKFieldContainer : public GenericSTKFieldContainer<Interleaved>
   bool build_face_boundary_indicator{false};
   bool build_edge_boundary_indicator{false};
   bool build_node_boundary_indicator{false};
+  bool build_qp_ice_saturation{false};
 
   // Containers for residual and solution
 

@@ -249,6 +249,7 @@ MultiSTKFieldContainer<Interleaved>::MultiSTKFieldContainer(
   bool const has_face_boundary_indicator = (std::find(req.begin(), req.end(), "face_boundary_indicator") != req.end());
   bool const has_edge_boundary_indicator = (std::find(req.begin(), req.end(), "edge_boundary_indicator") != req.end());
   bool const has_node_boundary_indicator = (std::find(req.begin(), req.end(), "node_boundary_indicator") != req.end());
+  bool const has_qp_ice_saturation       = (std::find(req.begin(), req.end(), "ACE Ice Saturation") != req.end());
   if (has_cell_boundary_indicator) {
     this->cell_boundary_indicator =
         metaData_->template get_field<stk::mesh::FieldBase>(stk::topology::ELEMENT_RANK, "cell_boundary_indicator");
@@ -279,6 +280,14 @@ MultiSTKFieldContainer<Interleaved>::MultiSTKFieldContainer(
     if (this->node_boundary_indicator != nullptr) {
       build_node_boundary_indicator = true;
       stk::io::set_field_role(*this->node_boundary_indicator, Ioss::Field::INFORMATION);
+    }
+  }
+  if (has_qp_ice_saturation) {
+    this->qp_ice_saturation =
+        metaData_->template get_field<stk::mesh::FieldBase>(stk::topology::ELEMENT_RANK, "ACE Ice Saturation");
+    if (this->qp_ice_saturation != nullptr) {
+      build_qp_ice_saturation = true;
+      stk::io::set_field_role(*this->qp_ice_saturation, Ioss::Field::INFORMATION);
     }
   }
 }
@@ -324,6 +333,11 @@ MultiSTKFieldContainer<Interleaved>::initializeSTKAdaptation()
   this->node_boundary_indicator =
       &this->metaData->template declare_field<SFT>(stk::topology::NODE_RANK, "node_boundary_indicator");
   stk::mesh::put_field_on_mesh(*this->node_boundary_indicator, this->metaData->universal_part(), nullptr);
+
+  // ACE Ice saturation
+  this->qp_ice_saturation =
+      &this->metaData->template declare_field<SFT>(stk::topology::ELEMENT_RANK, "ACE Ice Saturation");
+  stk::mesh::put_field_on_mesh(*this->qp_ice_saturation, this->metaData->universal_part(), nullptr);
 
   stk::io::set_field_role(*this->proc_rank_field, Ioss::Field::MESH);
   stk::io::set_field_role(*this->refine_field, Ioss::Field::MESH);

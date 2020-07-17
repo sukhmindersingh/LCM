@@ -65,7 +65,6 @@ struct J2ErosionKernel : public ParallelKernel<EvalT, Traits>
   ConstScalarField poissons_ratio_;
   ConstScalarField yield_strength_;
   ConstScalarField temperature_;
-  ConstScalarField ace_ice_saturation_;
 
   // Output MDFields
   ScalarField eqps_;
@@ -81,6 +80,8 @@ struct J2ErosionKernel : public ParallelKernel<EvalT, Traits>
 
   bool                       have_cell_boundary_indicator_{false};
   Teuchos::ArrayRCP<double*> cell_boundary_indicator_;
+  bool                       have_qp_ice_saturation_{false};
+  Teuchos::ArrayRCP<double*> qp_ice_saturation_;
 
   // Baseline constants
   RealType sat_mod_{0.0};

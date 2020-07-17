@@ -144,6 +144,9 @@ class AbstractDiscretization
   virtual std::map<GO, double*> const&
   getNodeBoundaryIndicator() const = 0;
 
+  virtual WorksetArray<Teuchos::ArrayRCP<double*>>::type const&
+  getQPIceSaturation() const = 0;
+
   virtual bool
   hasCellBoundaryIndicator() const = 0;
 
@@ -155,6 +158,9 @@ class AbstractDiscretization
 
   virtual bool
   hasNodeBoundaryIndicator() const = 0;
+
+  virtual bool
+  hasQPIceSaturation() const = 0;
 
   virtual void
   printElemGIDws() const

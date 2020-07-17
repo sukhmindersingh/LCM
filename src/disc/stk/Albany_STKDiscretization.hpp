@@ -247,11 +247,13 @@ class STKDiscretization : public AbstractDiscretization
   {
     return coords;
   }
+
   const WorksetArray<Teuchos::ArrayRCP<double>>::type&
   getSphereVolume() const
   {
     return sphereVolume;
   }
+
   const WorksetArray<Teuchos::ArrayRCP<double*>>::type&
   getLatticeOrientation() const
   {
@@ -282,6 +284,12 @@ class STKDiscretization : public AbstractDiscretization
     return node_boundary_indicator;
   }
 
+  WorksetArray<Teuchos::ArrayRCP<double*>>::type const&
+  getQPIceSaturation() const
+  {
+    return qp_ice_saturation;
+  }
+
   bool
   hasCellBoundaryIndicator() const
   {
@@ -304,6 +312,12 @@ class STKDiscretization : public AbstractDiscretization
   hasNodeBoundaryIndicator() const
   {
     return stkMeshStruct->getFieldContainer()->hasNodeBoundaryIndicatorField();
+  }
+
+  bool
+  hasQPIceSaturation() const
+  {
+    return stkMeshStruct->getFieldContainer()->hasQPIceSaturationField();
   }
 
   void
@@ -669,6 +683,7 @@ class STKDiscretization : public AbstractDiscretization
   WorksetArray<Teuchos::ArrayRCP<double*>>::type cell_boundary_indicator;
   WorksetArray<Teuchos::ArrayRCP<double*>>::type face_boundary_indicator;
   WorksetArray<Teuchos::ArrayRCP<double*>>::type edge_boundary_indicator;
+  WorksetArray<Teuchos::ArrayRCP<double*>>::type qp_ice_saturation;
 
   std::map<GO, double*> node_boundary_indicator;
 
