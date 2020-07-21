@@ -216,6 +216,7 @@ Albany::ACEThermalProblem::constructEvaluators(
     p->set<string>("Weighted Gradient BF Name", "wGrad BF");
     p->set<string>("BF Name", "BF");
     p->set<string>("ACE Thermal Inertia QP Variable Name", "ACE Thermal Inertia");
+    p->set<string>("ACE Latent Heat Source QP Variable Name", "ACE Latent Heat Source");
     p->set<string>("ACE Bluff Salinity QP Variable Name", "ACE Bluff Salinity");
     p->set<string>("ACE Ice Saturation QP Variable Name", "ACE Ice Saturation");
     p->set<string>("ACE Density QP Variable Name", "ACE Density");
@@ -332,6 +333,21 @@ Albany::ACEThermalProblem::constructEvaluators(
       if ((field_manager_choice == Albany::BUILD_RESID_FM) && (ev->evaluatedFields().size() > 0))
         fm0.template requireField<EvalT>(*ev->evaluatedFields()[0]);
     }
+    // Save ACE Latent Heat Source to the output Exodus file
+    {
+      std::string stateName = "ACE_Latent_Heat_Source";
+      entity                = Albany::StateStruct::QuadPoint;
+      p = state_mgr.registerStateVariable(stateName, dl_->qp_scalar, mesh_specs.ebName, true, &entity, "");
+      p->set<std::string>("Field Name", "ACE Latent Heat Source");
+      p->set("Field Layout", dl_->qp_scalar);
+      p->set<bool>("Nodal State", false);
+
+      ev = rcp(new PHAL::SaveStateField<EvalT, AlbanyTraits>(*p));
+      fm0.template registerEvaluator<EvalT>(ev);
+
+      if ((field_manager_choice == Albany::BUILD_RESID_FM) && (ev->evaluatedFields().size() > 0))
+        fm0.template requireField<EvalT>(*ev->evaluatedFields()[0]);
+    }
     // Save ACE Water Saturation to the output Exodus file
     {
       std::string stateName = "ACE_Water_Saturation";
@@ -401,6 +417,7 @@ Albany::ACEThermalProblem::constructEvaluators(
 
     p->set<string>("ACE Thermal Conductivity QP Variable Name", "ACE Thermal Conductivity");
     p->set<string>("ACE Thermal Inertia QP Variable Name", "ACE Thermal Inertia");
+    p->set<string>("ACE Latent Heat Source QP Variable Name", "ACE Latent Heat Source");
     p->set<RCP<DataLayout>>("QP Scalar Data Layout", dl_->qp_scalar);
     p->set<string>("ACE Thermal Conductivity Gradient QP Variable Name", "ACE Thermal Conductivity Gradient QP");
     p->set<std::string>("Jacobian Det Name", "Jacobian Det");

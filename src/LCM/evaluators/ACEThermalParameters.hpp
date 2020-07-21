@@ -55,6 +55,7 @@ class ACEThermalParameters : public PHX::EvaluatorWithBaseImpl<Traits>, public P
   PHX::MDField<const MeshScalarT, Cell, QuadPoint, Dim> coord_vec_;
   PHX::MDField<ScalarT, Cell, QuadPoint>                thermal_conductivity_;
   PHX::MDField<ScalarT, Cell, QuadPoint>                thermal_inertia_;
+  PHX::MDField<ScalarT, Cell, QuadPoint>                latent_heat_source_;
   PHX::MDField<ScalarT, Cell, QuadPoint>                bluff_salinity_;
   PHX::MDField<ScalarT, Cell, QuadPoint>                ice_saturation_;
   PHX::MDField<ScalarT, Cell, QuadPoint>                density_;
@@ -80,6 +81,7 @@ class ACEThermalParameters : public PHX::EvaluatorWithBaseImpl<Traits>, public P
   //! file
   std::map<std::string, RealType> const_thermal_conduct_map_;
   std::map<std::string, RealType> const_thermal_inertia_map_;
+  std::map<std::string, RealType> const_latent_heat_source_map_;
   std::map<std::string, RealType> ice_density_map_;
   std::map<std::string, RealType> water_density_map_;
   std::map<std::string, RealType> soil_density_map_;

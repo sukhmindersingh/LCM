@@ -29,6 +29,7 @@ ACEThermalParameters<EvalT, Traits>::ACEThermalParameters(
       wgradbf_(p.get<std::string>("Weighted Gradient BF Name"), dl->node_qp_vector),
       bf_(p.get<std::string>("BF Name"), dl->node_qp_scalar),
       thermal_inertia_(p.get<std::string>("ACE Thermal Inertia QP Variable Name"), dl->qp_scalar),
+      latent_heat_source_(p.get<std::string>("ACE Latent Heat Source QP Variable Name"), dl->qp_scalar),
       bluff_salinity_(p.get<std::string>("ACE Bluff Salinity QP Variable Name"), dl->qp_scalar),
       ice_saturation_(p.get<std::string>("ACE Ice Saturation QP Variable Name"), dl->qp_scalar),
       density_(p.get<std::string>("ACE Density QP Variable Name"), dl->qp_scalar),
@@ -74,6 +75,7 @@ ACEThermalParameters<EvalT, Traits>::ACEThermalParameters(
   this->addDependentField(bf_);
   this->addEvaluatedField(thermal_conductivity_);
   this->addEvaluatedField(thermal_inertia_);
+  this->addEvaluatedField(latent_heat_source_);
   this->addEvaluatedField(bluff_salinity_);
   this->addEvaluatedField(ice_saturation_);
   this->addEvaluatedField(density_);
@@ -93,6 +95,7 @@ ACEThermalParameters<EvalT, Traits>::postRegistrationSetup(typename Traits::Setu
 {
   this->utils.setFieldData(thermal_conductivity_, fm);
   this->utils.setFieldData(thermal_inertia_, fm);
+  this->utils.setFieldData(latent_heat_source_, fm);
   this->utils.setFieldData(bluff_salinity_, fm);
   this->utils.setFieldData(ice_saturation_, fm);
   this->utils.setFieldData(density_, fm);
@@ -115,6 +118,7 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
   std::string eb_name            = workset.EBName;
   ScalarT     thermal_conduct_eb = this->queryElementBlockParameterMap(eb_name, const_thermal_conduct_map_);
   ScalarT     thermal_inertia_eb = this->queryElementBlockParameterMap(eb_name, const_thermal_inertia_map_);
+  ScalarT     latent_heat_source_eb = this->queryElementBlockParameterMap(eb_name, const_latent_heat_source_map_);
   // Initialize thermal_cond_grad_at_nodes to zero
   for (std::size_t cell = 0; cell < workset_size_; ++cell) {
     for (std::size_t node = 0; node < num_nodes_; ++node) {
@@ -129,11 +133,12 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
   }
 
   // Set thermal conductivity, thermal inertia and other fields
-  if ((thermal_conduct_eb >= 0) || (thermal_inertia_eb >= 0)) {
+  if ((thermal_conduct_eb >= 0) || (thermal_inertia_eb >= 0) || (latent_heat_source_eb >= 0)) {
     for (std::size_t cell = 0; cell < workset_size_; ++cell) {
       for (std::size_t qp = 0; qp < num_qps_; ++qp) {
         thermal_conductivity_(cell, qp) = thermal_conduct_eb;
         thermal_inertia_(cell, qp)      = thermal_inertia_eb;
+        latent_heat_source_(cell, qp)   = latent_heat_source_eb;
       }
     }
     return;
@@ -173,8 +178,7 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
       // Thermal calculation
       // Calculate the depth-dependent porosity
       // NOTE: The porosity does not change in time so this calculation only
-      // needs
-      //       to be done once, at the beginning of the simulation.
+      // needs to be done once, at the beginning of the simulation.
       ScalarT               porosity_eb = this->queryElementBlockParameterMap(eb_name, porosity_bulk_map_);
       std::vector<RealType> porosity_from_file_eb =
           this->queryElementBlockParameterMap(eb_name, porosity_from_file_map_);
@@ -323,10 +327,12 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
         }
       }
 
+      // END NEW CURVE //
+      
+      
+
       std::min(icurr, 1.0);
       std::max(icurr, 0.0);
-
-      // END NEW CURVE //
 
       // Update the water saturation
       ScalarT wcurr = 1.0 - icurr;
@@ -354,6 +360,7 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
             (0.7e3 * sand_frac) + (0.6e3 * clay_frac) + (0.7e3 * silt_frac) + (1.93e3 * peat_frac);
         // K values in [W/K/m]
         calc_soil_thermal_cond = (8.0 * sand_frac) + (0.4 * clay_frac) + (4.9 * silt_frac) + (0.08 * peat_frac);
+        //calc_soil_thermal_cond = (10.0 * sand_frac) + (5.0 * clay_frac) + (8.0 * silt_frac) + (0.08 * peat_frac);
         // Rho values in [kg/m3]
         // Peat density from Emily Bristol
         calc_soil_density = ((1.0 - peat_frac) * soil_density_eb) + (peat_frac * 250.0);
@@ -394,7 +401,13 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
       // Update the material thermal inertia term
       ScalarT latent_heat_eb = this->queryElementBlockParameterMap(eb_name, latent_heat_map_);
       thermal_inertia_(cell, qp) =
-          (density_(cell, qp) * heat_capacity_(cell, qp)) - (ice_density_eb * latent_heat_eb * dfdT);
+          (density_(cell, qp) * heat_capacity_(cell, qp)); 
+          // - (ice_density_eb * latent_heat_eb * dfdT);
+          
+      // Update the latent heat src/sink term
+      //ScalarT latent_heat_eb = this->queryElementBlockParameterMap(eb_name, latent_heat_map_);
+      latent_heat_source_(cell, qp) =  ice_density_eb * latent_heat_eb * dfdT;
+          
       // Return values
       ice_saturation_(cell, qp)   = icurr;
       water_saturation_(cell, qp) = wcurr;
@@ -434,6 +447,7 @@ ACEThermalParameters<EvalT, Traits>::getValidThermalCondParameters() const
   valid_pl->set<double>(
       "ACE Thermal Conductivity Value", 1.0, "Constant thermal conductivity value across element block");
   valid_pl->set<double>("ACE Thermal Inertia Value", 1.0, "Constant thermal inertia value across element block");
+  valid_pl->set<double>("ACE Latent Heat Source Value", 1.0, "Constant latent heat source value across element block");
   valid_pl->set<double>("ACE Ice Density", 920.0, "Constant value of ice density in element block");
   valid_pl->set<double>("ACE Water Density", 1000.0, "Constant value of water density in element block");
   valid_pl->set<double>("ACE Sediment Density", 2650.0, "Constant value of sediment density in element block");
@@ -473,6 +487,12 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
     if (const_thermal_inertia_map_[eb_name] != -1.0) {
       ALBANY_ASSERT(
           (const_thermal_inertia_map_[eb_name] > 0.0), "*** ERROR: ACE Thermal Inertia Value must be positive!");
+    }
+    const_latent_heat_source_map_[eb_name] =
+        material_db_->getElementBlockParam<RealType>(eb_name, "ACE Latent Heat Source Value", -1.0);
+    if (const_latent_heat_source_map_[eb_name] != -1.0) {
+      ALBANY_ASSERT(
+          (const_latent_heat_source_map_[eb_name] > 0.0), "*** ERROR: ACE Latent Heat Source Value must be positive!");
     }
     ice_density_map_[eb_name] = material_db_->getElementBlockParam<RealType>(eb_name, "ACE Ice Density", 920.0);
     ALBANY_ASSERT((ice_density_map_[eb_name] >= 0.0), "*** ERROR: ACE Ice Density must be non-negative!");

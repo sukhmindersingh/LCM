@@ -29,6 +29,9 @@ ACETempStandAloneResid<EvalT, Traits>::ACETempStandAloneResid(Teuchos::Parameter
       thermal_inertia_(
           p.get<std::string>("ACE Thermal Inertia QP Variable Name"),
           p.get<Teuchos::RCP<PHX::DataLayout>>("QP Scalar Data Layout")),
+      latent_heat_source_(
+          p.get<std::string>("ACE Latent Heat Source QP Variable Name"),
+          p.get<Teuchos::RCP<PHX::DataLayout>>("QP Scalar Data Layout")),
       thermal_cond_grad_at_qps_(
           p.get<std::string>("ACE Thermal Conductivity Gradient QP Variable Name"),
           p.get<Teuchos::RCP<PHX::DataLayout>>("QP Vector Data Layout")),
@@ -44,6 +47,7 @@ ACETempStandAloneResid<EvalT, Traits>::ACETempStandAloneResid(Teuchos::Parameter
   this->addDependentField(wgradbf_);
   this->addDependentField(thermal_conductivity_);
   this->addDependentField(thermal_inertia_);
+  this->addDependentField(latent_heat_source_);
   this->addDependentField(thermal_cond_grad_at_qps_);
   this->addDependentField(tau_);
   this->addDependentField(jacobian_det_);
@@ -82,6 +86,7 @@ ACETempStandAloneResid<EvalT, Traits>::postRegistrationSetup(
   this->utils.setFieldData(residual_, fm);
   this->utils.setFieldData(thermal_conductivity_, fm);
   this->utils.setFieldData(thermal_inertia_, fm);
+  this->utils.setFieldData(latent_heat_source_, fm);
   this->utils.setFieldData(tau_, fm);
   this->utils.setFieldData(coord_vec_, fm);
   this->utils.setFieldData(thermal_cond_grad_at_qps_, fm);
@@ -94,13 +99,15 @@ void
 ACETempStandAloneResid<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
 {
   // We are solving the following PDE:
-  // thermal_inertia_ * dT/dt - thermal_conductivity_ * \nabla T = 0 in 3D
+  // (thermal_inertia_ * dT/dt) - (thermal_conductivity_ * \nabla T) - (heat_source_ * dT/dt) = 0 in 3D
   for (std::size_t cell = 0; cell < workset_size_; ++cell) {
     for (std::size_t node = 0; node < num_nodes_; ++node) {
       residual_(cell, node) = 0.0;
       for (std::size_t qp = 0; qp < num_qps_; ++qp) {
         // Time-derivative contribution to residual
         residual_(cell, node) += thermal_inertia_(cell, qp) * tdot_(cell, qp) * wbf_(cell, node, qp);
+        // Latent heat src/sink contribution to residual
+        residual_(cell, node) -= latent_heat_source_(cell, qp) * tdot_(cell, qp) * wbf_(cell, node, qp);
         // Diffusion part of residual
         for (std::size_t ndim = 0; ndim < num_dims_; ++ndim) {
           residual_(cell, node) +=
