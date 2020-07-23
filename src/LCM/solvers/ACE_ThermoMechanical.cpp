@@ -745,6 +745,7 @@ ACEThermoMechanical::AdvanceThermalDynamics(
   Thyra::V_VpStV(xdot_diff_rcp.ptr(), *this_xdot_[subdomain], -1.0, *prev_xdot_[subdomain]);
 
   failed_ = false;
+  discs_[subdomain]->flushOutput();
 }
 
 void
@@ -841,6 +842,7 @@ ACEThermoMechanical::AdvanceMechanicsDynamics(
   Thyra::V_VpStV(xdotdot_diff_rcp.ptr(), *this_xdotdot_[subdomain], -1.0, *prev_xdotdot_[subdomain]);
 
   failed_ = false;
+  discs_[subdomain]->flushOutput();
 }
 
 void

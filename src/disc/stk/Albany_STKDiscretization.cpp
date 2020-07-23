@@ -976,6 +976,12 @@ STKDiscretization::writeSolutionMVToFile(const Thyra_MultiVector& soln, double c
   }
 }
 
+void
+STKDiscretization::flushOutput()
+{
+  if (mesh_data.is_null() == false) { mesh_data->flush_output(); }
+}
+
 double
 STKDiscretization::monotonicTimeLabel(double const time)
 {

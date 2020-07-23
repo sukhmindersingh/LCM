@@ -619,6 +619,8 @@ class STKDiscretization : public AbstractDiscretization
   int
   nonzeroesPerRow(int const neq) const;
 
+  void
+  flushOutput();
   // ==================== Members =================== //
 
   Teuchos::RCP<Teuchos::FancyOStream> out;
