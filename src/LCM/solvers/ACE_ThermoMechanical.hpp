@@ -206,8 +206,6 @@ class ACEThermoMechanical : public Thyra::ResponseOnlyModelEvaluatorBase<ST>
   mutable std::vector<Teuchos::RCP<Thyra::VectorBase<ST>>>     this_xdot_;
   mutable std::vector<Teuchos::RCP<Thyra::VectorBase<ST>>>     this_xdotdot_;
 
-  // std::vector for holding names of previous Exodus output files, for restarts.
-  mutable std::vector<std::string> prev_exo_outfile_name_;
   // variable with previous thermal Exodus output file, for mechanics restarts
   mutable std::string prev_thermal_exo_outfile_name_;
   // variable with previous mechanics Exodus output file, for thermal restarts

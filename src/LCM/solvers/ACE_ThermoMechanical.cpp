@@ -95,8 +95,6 @@ ACEThermoMechanical::ACEThermoMechanical(
   do_outputs_init_.resize(num_subdomains_);
   prob_types_.resize(num_subdomains_);
 
-  prev_exo_outfile_name_.resize(num_subdomains_);
-
   // IKT QUESTION 6/4/2020: do we want to support quasistatic for thermo-mechanical
   // coupling??  Leaving it in for now.
   bool is_static{false};
@@ -219,7 +217,6 @@ ACEThermoMechanical::createSolversAppsDiscsMEs(const int file_index, const doubl
         ALBANY_ABORT("Exodus output file does not end in '.e' or '.exo' - cannot rename!\n");
       }
     }
-    prev_exo_outfile_name_[subdomain] = str;
     *fos_ << "Renaming output file to - " << str << '\n';
     disc_params.set<const std::string>("Exodus Output File Name", str);
 
@@ -233,34 +230,25 @@ ACEThermoMechanical::createSolversAppsDiscsMEs(const int file_index, const doubl
       disc_params.set<std::string>("Exodus SolutionDotDot Name", "disp_dotdot");
     }
     disc_params.set<bool>("Output DTK Field to Exodus", false);
-    // Change input Exodus file to previous Exodus output file, for restarts.
-    // Set strings such that thermal problem restarts from previous mechanics
-    // Exodus output file, and vice versa for mechanics
-    if (prob_type == THERMAL) {
-      prev_thermal_exo_outfile_name_ = prev_exo_outfile_name_[0];
-      // After the initial run, we will do restarts from the previously written Exodus output file.
-      if (file_index > 0) {
+    // After the initial run, we will do restarts from the previously written Exodus output file.
+    if (file_index > 0) {
+      if (prob_type == THERMAL) {
         // Change input Exodus file to previous mechanics Exodus output file, for restarts.
         disc_params.set<const std::string>("Exodus Input File Name", prev_mechanics_exo_outfile_name_);
-      }
-    } else if (prob_type == MECHANICAL) {
-      prev_mechanics_exo_outfile_name_ = prev_exo_outfile_name_[1];
-      // Change input Exodus file to previous thermal Exodus output file, for restarts.
-      if (file_index > 0) {
+      } else if (prob_type == MECHANICAL) {
+        // Change input Exodus file to previous thermal Exodus output file, for restarts.
         disc_params.set<const std::string>("Exodus Input File Name", prev_thermal_exo_outfile_name_);
+        // Give the names of the fields (other than solution, solution_dot, solution_dotdot)
+        // in the restart file that we want to use when we do the restart.  Currently, I'm
+        // only specifying "ACE Ice Saturation" and only for the mechanics problem.
+        // NOTE: it appears the fields become all lower case upon restarts in some cases,
+        // therefore defining 2 version of the 'ACE Ice Saturation' field, one with cases, one all
+        // lower case.
+        //        Teuchos::Array<std::string> restart_fields;
+        //        restart_fields.push_back("ACE Ice Saturation");
+        //        restart_fields.push_back("ace_ice_saturation");
+        //        disc_params.set<Teuchos::Array<std::string>>("Restart Fields", restart_fields);
       }
-      // Give the names of the fields (other than solution, solution_dot, solution_dotdot)
-      // in the restart file that we want to use when we do the restart.  Currently, I'm
-      // only specifying "ACE Ice Saturation" and only for the mechanics problem.
-      // NOTE: it appears the fields become all lower case upon restarts in some cases,
-      // therefore defining 2 version of the 'ACE Ice Saturation' field, one with cases, one all
-      // lower case.
-      //        Teuchos::Array<std::string> restart_fields;
-      //        restart_fields.push_back("ACE Ice Saturation");
-      //        restart_fields.push_back("ace_ice_saturation");
-      //        disc_params.set<Teuchos::Array<std::string>>("Restart Fields", restart_fields);
-    }
-    if (file_index > 0) {
       // Restart from time at beginning of when this function is called
       disc_params.set<double>("Restart Time", this_time);
       // Get problem parameter list and remove Initial Condition sublist
@@ -293,6 +281,13 @@ ACEThermoMechanical::createSolversAppsDiscsMEs(const int file_index, const doubl
     stk_mesh_structs_[subdomain]                    = ams;
     model_evaluators_[subdomain]                    = solver_factories_[subdomain]->returnModel();
     curr_x_[subdomain]                              = Teuchos::null;
+    // Set strings such that thermal problem restarts from previous mechanics
+    // Exodus output file, and vice versa for mechanics
+    if (prob_type == THERMAL) {
+      prev_thermal_exo_outfile_name_ = str;
+    } else if (prob_type == MECHANICAL) {
+      prev_mechanics_exo_outfile_name_ = str;
+    }
   }
 }
 
@@ -745,7 +740,6 @@ ACEThermoMechanical::AdvanceThermalDynamics(
   Thyra::V_VpStV(xdot_diff_rcp.ptr(), *this_xdot_[subdomain], -1.0, *prev_xdot_[subdomain]);
 
   failed_ = false;
-  discs_[subdomain]->flushOutput();
 }
 
 void
@@ -842,7 +836,6 @@ ACEThermoMechanical::AdvanceMechanicsDynamics(
   Thyra::V_VpStV(xdotdot_diff_rcp.ptr(), *this_xdotdot_[subdomain], -1.0, *prev_xdotdot_[subdomain]);
 
   failed_ = false;
-  discs_[subdomain]->flushOutput();
 }
 
 void
