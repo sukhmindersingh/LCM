@@ -111,7 +111,7 @@ ACEThermoMechanical::ACEThermoMechanical(
 
     // Get problem name to figure out if we have a thermal or mechanical problem for
     // this subdomain, and populate prob_types_ vector using this information.
-    // IKT 6/4/2020: This is added to allow user to specify mechanics and thermal problems in
+    // IKT 6/4/2020: This is added to allow user to specify mechanical and thermal problems in
     // different orders.  I'm not sure if this will be of interest ultimately or not.
     const std::string problem_name = getName(problem_params.get<std::string>("Name"));
     if (problem_name == "Mechanics") {
@@ -175,7 +175,7 @@ ACEThermoMechanical::ACEThermoMechanical(
   bool const have_responses = problem_params.isSublist("Response Functions");
   ALBANY_ASSERT(have_responses == false, "Responses not supported.");
 
-  // Check that the first problem type is thermal and the second problem type is mechanics,
+  // Check that the first problem type is thermal and the second problem type is mechanical,
   // as the current version of the coupling algorithm requires this ordering.
   // If ordering is wrong, through error.
   PROB_TYPE prob_type = prob_types_[0];
@@ -188,108 +188,6 @@ ACEThermoMechanical::ACEThermoMechanical(
 }
 
 ACEThermoMechanical::~ACEThermoMechanical() { return; }
-
-// The following routine creates the solvers, applications, discretizations
-// and model evaluators for the run.  It is a separate routine to easily allow
-// for recreation of these options from the coupling loops.
-void
-ACEThermoMechanical::createSolversAppsDiscsMEs(const int file_index, const double this_time) const
-{
-  for (auto subdomain = 0; subdomain < num_subdomains_; ++subdomain) {
-    // Get parameters from solver_factories_
-    Teuchos::ParameterList& params         = solver_factories_[subdomain]->getParameters();
-    Teuchos::ParameterList& problem_params = params.sublist("Problem", true);
-
-    Teuchos::ParameterList& disc_params = params.sublist("Discretization", true);
-    // Rename output file to append index to it
-    // IKT WARNING: this is a little bit fragile because it assumed output file name
-    // ends with ".e" or ".exo".  An error is thrown if a different ending is found.
-    std::ostringstream ss;
-    std::string        str = disc_params.get<std::string>("Exodus Output File Name");
-    if (str.find(".exo") != std::string::npos) {
-      ss << ".e-s." << file_index;
-      str.replace(str.find(".exo"), std::string::npos, ss.str());
-    } else {
-      if (str.find(".e") != std::string::npos) {
-        ss << ".e-s." << file_index;
-        str.replace(str.find(".e"), std::string::npos, ss.str());
-      } else {
-        ALBANY_ABORT("Exodus output file does not end in '.e' or '.exo' - cannot rename!\n");
-      }
-    }
-    *fos_ << "Renaming output file to - " << str << '\n';
-    disc_params.set<const std::string>("Exodus Output File Name", str);
-
-    auto const prob_type = prob_types_[subdomain];
-    if (prob_type == THERMAL) {
-      disc_params.set<std::string>("Exodus Solution Name", "temperature");
-      disc_params.set<std::string>("Exodus SolutionDot Name", "temperature_dot");
-    } else if (prob_type == MECHANICAL) {
-      disc_params.set<std::string>("Exodus Solution Name", "disp");
-      disc_params.set<std::string>("Exodus SolutionDot Name", "disp_dot");
-      disc_params.set<std::string>("Exodus SolutionDotDot Name", "disp_dotdot");
-    }
-    disc_params.set<bool>("Output DTK Field to Exodus", false);
-    // After the initial run, we will do restarts from the previously written Exodus output file.
-    if (file_index > 0) {
-      if (prob_type == THERMAL) {
-        // Change input Exodus file to previous mechanics Exodus output file, for restarts.
-        disc_params.set<const std::string>("Exodus Input File Name", prev_mechanics_exo_outfile_name_);
-      } else if (prob_type == MECHANICAL) {
-        // Change input Exodus file to previous thermal Exodus output file, for restarts.
-        disc_params.set<const std::string>("Exodus Input File Name", prev_thermal_exo_outfile_name_);
-        // Give the names of the fields (other than solution, solution_dot, solution_dotdot)
-        // in the restart file that we want to use when we do the restart.  Currently, I'm
-        // only specifying "ACE Ice Saturation" and only for the mechanics problem.
-        // NOTE: it appears the fields become all lower case upon restarts in some cases,
-        // therefore defining 2 version of the 'ACE Ice Saturation' field, one with cases, one all
-        // lower case.
-        //        Teuchos::Array<std::string> restart_fields;
-        //        restart_fields.push_back("ACE Ice Saturation");
-        //        restart_fields.push_back("ace_ice_saturation");
-        //        disc_params.set<Teuchos::Array<std::string>>("Restart Fields", restart_fields);
-      }
-      // Restart from time at beginning of when this function is called
-      disc_params.set<double>("Restart Time", this_time);
-      // Get problem parameter list and remove Initial Condition sublist
-      Teuchos::ParameterList& problem_params = params.sublist("Problem", true);
-      problem_params.remove("Initial Condition", true);
-    }
-
-    // Set a flag to inform the mechanics problem to register the field ACE Ice Saturation
-    if (prob_type == MECHANICAL) {
-      problem_params.set("ACE Sequential Thermomechanical", true, "ACE Sequential Thermomechanical Problem");
-    }
-
-    Teuchos::RCP<Albany::Application>                       app{Teuchos::null};
-    Teuchos::RCP<Thyra::ResponseOnlyModelEvaluatorBase<ST>> solver =
-        solver_factories_[subdomain]->createAndGetAlbanyApp(app, comm_, comm_);
-
-    solvers_[subdomain] = solver;
-    apps_[subdomain]    = app;
-
-    // Get STK mesh structs to control Exodus output interval
-    Teuchos::RCP<Albany::AbstractDiscretization> disc = app->getDiscretization();
-    discs_[subdomain]                                 = disc;
-
-    Albany::STKDiscretization& stk_disc = *static_cast<Albany::STKDiscretization*>(disc.get());
-    if (file_index == 0) { stk_disc.outputExodusSolutionInitialTime(true); }
-
-    Teuchos::RCP<Albany::AbstractSTKMeshStruct> ams = stk_disc.getSTKMeshStruct();
-    do_outputs_[subdomain]                          = ams->exoOutput;
-    do_outputs_init_[subdomain]                     = ams->exoOutput;
-    stk_mesh_structs_[subdomain]                    = ams;
-    model_evaluators_[subdomain]                    = solver_factories_[subdomain]->returnModel();
-    curr_x_[subdomain]                              = Teuchos::null;
-    // Set strings such that thermal problem restarts from previous mechanics
-    // Exodus output file, and vice versa for mechanics
-    if (prob_type == THERMAL) {
-      prev_thermal_exo_outfile_name_ = str;
-    } else if (prob_type == MECHANICAL) {
-      prev_mechanics_exo_outfile_name_ = str;
-    }
-  }
-}
 
 Teuchos::RCP<Thyra_VectorSpace const>
 ACEThermoMechanical::get_x_space() const
@@ -475,7 +373,142 @@ centered(std::string const& str, int width)
   return std::string(left, ' ') + str + std::string(right, ' ');
 }
 
-}  // namespace
+void
+renameExodusFile(int const file_index, std::string& filename)
+{
+  std::ostringstream ss;
+  if (filename.find(".exo") != std::string::npos) {
+    ss << ".e-s." << file_index;
+    filename.replace(filename.find(".exo"), std::string::npos, ss.str());
+  } else {
+    if (filename.find(".e") != std::string::npos) {
+      ss << ".e-s." << file_index;
+      filename.replace(filename.find(".e"), std::string::npos, ss.str());
+    } else {
+      ALBANY_ABORT("Exodus output file does not end in '.e' or '.exo' - cannot rename!\n");
+    }
+  }
+}
+
+}  // anonymous namespace
+
+// The following routine creates the solvers, applications, discretizations
+// and model evaluators for the run.  It is a separate routine to easily allow
+// for recreation of these options from the coupling loops.
+void
+ACEThermoMechanical::createSolversAppsDiscsMEs(int const file_index, double const this_time) const
+{
+  for (auto subdomain = 0; subdomain < num_subdomains_; ++subdomain) {
+    auto const prob_type = prob_types_[subdomain];
+    if (prob_type == THERMAL) {
+      createThermalSolverAppDiscME(file_index, this_time);
+    } else if (prob_type == MECHANICAL) {
+      createMechanicalSolverAppDiscME(file_index, this_time);
+    }
+  }
+}
+
+void
+ACEThermoMechanical::createThermalSolverAppDiscME(int const file_index, double const this_time) const
+{
+  auto const              subdomain      = 0;
+  Teuchos::ParameterList& params         = solver_factories_[subdomain]->getParameters();
+  Teuchos::ParameterList& problem_params = params.sublist("Problem", true);
+  Teuchos::ParameterList& disc_params    = params.sublist("Discretization", true);
+  std::string             filename       = disc_params.get<std::string>("Exodus Output File Name");
+  renameExodusFile(file_index, filename);
+  *fos_ << "Renaming output file to - " << filename << '\n';
+  disc_params.set<const std::string>("Exodus Output File Name", filename);
+
+  disc_params.set<std::string>("Exodus Solution Name", "temperature");
+  disc_params.set<std::string>("Exodus SolutionDot Name", "temperature_dot");
+  disc_params.set<bool>("Output DTK Field to Exodus", false);
+  // After the initial run, we will do restarts from the previously written Exodus output file.
+  if (file_index > 0) {
+    // Change input Exodus file to previous mechanical Exodus output file, for restarts.
+    disc_params.set<const std::string>("Exodus Input File Name", prev_mechanical_exo_outfile_name_);
+    // Restart from time at beginning of when this function is called
+    disc_params.set<double>("Restart Time", this_time);
+    // Get problem parameter list and remove Initial Condition sublist
+    Teuchos::ParameterList& problem_params = params.sublist("Problem", true);
+    problem_params.remove("Initial Condition", true);
+  }
+
+  Teuchos::RCP<Albany::Application>                       app{Teuchos::null};
+  Teuchos::RCP<Thyra::ResponseOnlyModelEvaluatorBase<ST>> solver =
+      solver_factories_[subdomain]->createAndGetAlbanyApp(app, comm_, comm_);
+
+  solvers_[subdomain] = solver;
+  apps_[subdomain]    = app;
+
+  // Get STK mesh structs to control Exodus output interval
+  Teuchos::RCP<Albany::AbstractDiscretization> disc = app->getDiscretization();
+  discs_[subdomain]                                 = disc;
+
+  Albany::STKDiscretization& stk_disc = *static_cast<Albany::STKDiscretization*>(disc.get());
+  if (file_index == 0) { stk_disc.outputExodusSolutionInitialTime(true); }
+
+  Teuchos::RCP<Albany::AbstractSTKMeshStruct> ams = stk_disc.getSTKMeshStruct();
+  do_outputs_[subdomain]                          = ams->exoOutput;
+  do_outputs_init_[subdomain]                     = ams->exoOutput;
+  stk_mesh_structs_[subdomain]                    = ams;
+  model_evaluators_[subdomain]                    = solver_factories_[subdomain]->returnModel();
+  curr_x_[subdomain]                              = Teuchos::null;
+  prev_thermal_exo_outfile_name_                  = filename;
+}
+
+void
+ACEThermoMechanical::createMechanicalSolverAppDiscME(int const file_index, double const this_time) const
+{
+  auto const              subdomain      = 1;
+  Teuchos::ParameterList& params         = solver_factories_[subdomain]->getParameters();
+  Teuchos::ParameterList& problem_params = params.sublist("Problem", true);
+  Teuchos::ParameterList& disc_params    = params.sublist("Discretization", true);
+  std::string             filename       = disc_params.get<std::string>("Exodus Output File Name");
+  renameExodusFile(file_index, filename);
+  *fos_ << "Renaming output file to - " << filename << '\n';
+  disc_params.set<const std::string>("Exodus Output File Name", filename);
+
+  disc_params.set<std::string>("Exodus Solution Name", "disp");
+  disc_params.set<std::string>("Exodus SolutionDot Name", "disp_dot");
+  disc_params.set<std::string>("Exodus SolutionDotDot Name", "disp_dotdot");
+  disc_params.set<bool>("Output DTK Field to Exodus", false);
+  // After the initial run, we will do restarts from the previously written Exodus output file.
+  if (file_index > 0) {
+    // Change input Exodus file to previous thermal Exodus output file, for restarts.
+    disc_params.set<const std::string>("Exodus Input File Name", prev_thermal_exo_outfile_name_);
+    // Restart from time at beginning of when this function is called
+    disc_params.set<double>("Restart Time", this_time);
+    // Get problem parameter list and remove Initial Condition sublist
+    Teuchos::ParameterList& problem_params = params.sublist("Problem", true);
+    problem_params.remove("Initial Condition", true);
+  }
+
+  // Set a flag to inform the mechanical problem to register the field ACE Ice Saturation
+  problem_params.set("ACE Sequential Thermomechanical", true, "ACE Sequential Thermomechanical Problem");
+
+  Teuchos::RCP<Albany::Application>                       app{Teuchos::null};
+  Teuchos::RCP<Thyra::ResponseOnlyModelEvaluatorBase<ST>> solver =
+      solver_factories_[subdomain]->createAndGetAlbanyApp(app, comm_, comm_);
+
+  solvers_[subdomain] = solver;
+  apps_[subdomain]    = app;
+
+  // Get STK mesh structs to control Exodus output interval
+  Teuchos::RCP<Albany::AbstractDiscretization> disc = app->getDiscretization();
+  discs_[subdomain]                                 = disc;
+
+  Albany::STKDiscretization& stk_disc = *static_cast<Albany::STKDiscretization*>(disc.get());
+  if (file_index == 0) { stk_disc.outputExodusSolutionInitialTime(true); }
+
+  Teuchos::RCP<Albany::AbstractSTKMeshStruct> ams = stk_disc.getSTKMeshStruct();
+  do_outputs_[subdomain]                          = ams->exoOutput;
+  do_outputs_init_[subdomain]                     = ams->exoOutput;
+  stk_mesh_structs_[subdomain]                    = ams;
+  model_evaluators_[subdomain]                    = solver_factories_[subdomain]->returnModel();
+  curr_x_[subdomain]                              = Teuchos::null;
+  prev_mechanical_exo_outfile_name_               = filename;
+}
 
 bool
 ACEThermoMechanical::continueSolve() const
@@ -515,18 +548,6 @@ ACEThermoMechanical::ThermoMechanicalLoopDynamics() const
     *fos_ << "Time step          :" << time_step << '\n';
     *fos_ << delim << std::endl;
 
-    if (stop > 0) {
-      // Create new solvers, apps, discs and model evaluators
-      this->createSolversAppsDiscsMEs(stop, current_time);
-    }
-
-    // Before the coupling loop, get internal states
-    for (auto subdomain = 0; subdomain < num_subdomains_; ++subdomain) {
-      auto& app       = *apps_[subdomain];
-      auto& state_mgr = app.getStateMgr();
-      fromTo(state_mgr.getStateArrays(), internal_states_[subdomain]);
-    }
-
     ST const next_time{current_time + time_step};
     num_iter_ = 0;
 
@@ -534,17 +555,32 @@ ACEThermoMechanical::ThermoMechanicalLoopDynamics() const
     do {
       bool const is_initial_state = stop == 0 && num_iter_ == 0;
       for (auto subdomain = 0; subdomain < num_subdomains_; ++subdomain) {
+        if (stop > 0) {
+          // Create new solvers, apps, discs and model evaluators
+          auto const prob_type = prob_types_[subdomain];
+          if (prob_type == THERMAL) {
+            createThermalSolverAppDiscME(stop, current_time);
+          } else if (prob_type == MECHANICAL) {
+            createMechanicalSolverAppDiscME(stop, current_time);
+          }
+        }
+        // Before the coupling loop, get internal states
+        if (num_iter_ == 0) {
+          auto& app       = *apps_[subdomain];
+          auto& state_mgr = app.getStateMgr();
+          fromTo(state_mgr.getStateArrays(), internal_states_[subdomain]);
+        }
         *fos_ << delim << std::endl;
         const PROB_TYPE prob_type = prob_types_[subdomain];
         *fos_ << "Subdomain          :" << subdomain << '\n';
         // IKT FIXME 6/5/2020: currently there is a lot of code duplication in
-        // AdvanceMechanicsDynamics and AdvanceThermalDynamics b/c they effectively
+        // AdvanceMechanicalDynamics and AdvanceThermalDynamics b/c they effectively
         // do the thing.  These routines may diverge as we modify them to do the
         // sequential coupling, which is why I kept them separate.  We may want to think
         // of ways to combine them at a later point to avoid some of the code duplication.
         if (prob_type == MECHANICAL) {
           *fos_ << "Problem            :Mechanical\n";
-          AdvanceMechanicsDynamics(subdomain, is_initial_state, current_time, next_time, time_step);
+          AdvanceMechanicalDynamics(subdomain, is_initial_state, current_time, next_time, time_step);
         } else {
           *fos_ << "Problem            :Thermal\n";
           AdvanceThermalDynamics(subdomain, is_initial_state, current_time, next_time, time_step);
@@ -655,11 +691,11 @@ ACEThermoMechanical::ThermoMechanicalLoopDynamics() const
 
 void
 ACEThermoMechanical::AdvanceThermalDynamics(
-    const int    subdomain,
-    const bool   is_initial_state,
-    const double current_time,
-    const double next_time,
-    const double time_step) const
+    int const    subdomain,
+    bool const   is_initial_state,
+    double const current_time,
+    double const next_time,
+    double const time_step) const
 {
   // Restore solution from previous coupling iteration before solve
   // IKT 6/20/2020: do we still need this stuff when we do restarts?
@@ -743,12 +779,12 @@ ACEThermoMechanical::AdvanceThermalDynamics(
 }
 
 void
-ACEThermoMechanical::AdvanceMechanicsDynamics(
-    const int    subdomain,
-    const bool   is_initial_state,
-    const double current_time,
-    const double next_time,
-    const double time_step) const
+ACEThermoMechanical::AdvanceMechanicalDynamics(
+    int const    subdomain,
+    bool const   is_initial_state,
+    double const current_time,
+    double const next_time,
+    double const time_step) const
 {
   // Restore solution from previous coupling iteration before solve
   if (is_initial_state == true) {
@@ -810,7 +846,7 @@ ACEThermoMechanical::AdvanceMechanicsDynamics(
   auto const status = piro_tempus_solver.getTempusIntegratorStatus();
 
   if (status == Tempus::Status::FAILED) {
-    *fos_ << "\nINFO: Unable to solve Mechanics problem for subdomain " << subdomain << '\n';
+    *fos_ << "\nINFO: Unable to solve Mechanical problem for subdomain " << subdomain << '\n';
     failed_ = true;
     return;
   }
