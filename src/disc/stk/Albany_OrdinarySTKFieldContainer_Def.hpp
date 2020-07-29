@@ -211,11 +211,6 @@ OrdinarySTKFieldContainer<Interleaved>::initializeSTKAdaptation()
       &this->metaData->template declare_field<SFT>(stk::topology::NODE_RANK, "node_boundary_indicator");
   stk::mesh::put_field_on_mesh(*this->node_boundary_indicator, this->metaData->universal_part(), nullptr);
 
-  // ACE Ice saturation
-  this->qp_ice_saturation =
-      &this->metaData->template declare_field<SFT>(stk::topology::ELEMENT_RANK, "ACE Ice Saturation");
-  stk::mesh::put_field_on_mesh(*this->qp_ice_saturation, this->metaData->universal_part(), nullptr);
-
   stk::io::set_field_role(*this->proc_rank_field, Ioss::Field::MESH);
   stk::io::set_field_role(*this->refine_field, Ioss::Field::MESH);
   for (stk::mesh::EntityRank rank = stk::topology::NODE_RANK; rank <= stk::topology::ELEMENT_RANK; ++rank) {
