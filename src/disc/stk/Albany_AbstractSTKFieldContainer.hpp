@@ -311,22 +311,22 @@ class AbstractSTKFieldContainer : public AbstractFieldContainer
   // the same field).
   //       Otherwise, coordinates_field3d stores coordinates in 3d (useful for
   //       non-flat 2d meshes)
-  VectorFieldType*      coordinates_field3d;
-  VectorFieldType*      coordinates_field;
-  IntScalarFieldType*   proc_rank_field;
-  IntScalarFieldType*   refine_field;
+  VectorFieldType*      coordinates_field3d{nullptr};
+  VectorFieldType*      coordinates_field{nullptr};
+  IntScalarFieldType*   proc_rank_field{nullptr};
+  IntScalarFieldType*   refine_field{nullptr};
   IntScalarFieldType*   failure_state[stk::topology::ELEMENT_RANK + 1];
-  stk::mesh::FieldBase* cell_boundary_indicator;
-  stk::mesh::FieldBase* face_boundary_indicator;
-  stk::mesh::FieldBase* edge_boundary_indicator;
-  stk::mesh::FieldBase* node_boundary_indicator;
-  stk::mesh::FieldBase* qp_ice_saturation;
+  stk::mesh::FieldBase* cell_boundary_indicator{nullptr};
+  stk::mesh::FieldBase* face_boundary_indicator{nullptr};
+  stk::mesh::FieldBase* edge_boundary_indicator{nullptr};
+  stk::mesh::FieldBase* node_boundary_indicator{nullptr};
+  stk::mesh::FieldBase* qp_ice_saturation{nullptr};
 
   // Required for Peridynamics in LCM
-  SphereVolumeFieldType* sphereVolume_field;
+  SphereVolumeFieldType* sphereVolume_field{nullptr};
 
   // Required for certain LCM material models
-  stk::mesh::FieldBase* latticeOrientation_field;
+  stk::mesh::FieldBase* latticeOrientation_field{nullptr};
 
   ScalarValueState       scalarValue_states;
   MeshScalarState        mesh_scalar_states;
