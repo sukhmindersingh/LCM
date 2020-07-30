@@ -1596,7 +1596,6 @@ STKDiscretization::computeWorksetInfoBoundaryIndicators()
       for (auto i = 0; i < cell_bucket.size(); ++i) {
         auto cell               = cell_bucket[i];
         qp_ice_saturation[b][i] = static_cast<double*>(stk::mesh::field_data(*cell_field, cell));
-        ALBANY_ASSERT(qp_ice_saturation[b][i][0] != 0.0, "*** BUCKET : " << b << " INDEX : " << i << " IS : " << qp_ice_saturation[b][i][0] << "\n");
       }
     }
   }

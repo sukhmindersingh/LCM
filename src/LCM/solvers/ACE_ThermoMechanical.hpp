@@ -169,7 +169,7 @@ class ACEThermoMechanical : public Thyra::ResponseOnlyModelEvaluatorBase<ST>
   setExplicitUpdateInitialGuessForCoupling(ST const current_time, ST const time_step) const;
 
   void
-  setDynamicICVecsAndDoOutput(ST const time) const;
+  setICVecsAndOutput(ST const time, int const subdomain) const;
 
   std::vector<Teuchos::RCP<Albany::SolverFactory>>                             solver_factories_;
   mutable std::vector<Teuchos::RCP<Thyra::ResponseOnlyModelEvaluatorBase<ST>>> solvers_;
