@@ -218,7 +218,7 @@ MechanicsProblem::MechanicsProblem(
     // TODO: Layout for edge does not exist yet
     requirements.push_back("node_boundary_indicator");
   }
-  if (is_ace_sequential_thermomechanical == true) { requirements.push_back("ACE Ice Saturation"); }
+  if (is_ace_sequential_thermomechanical == true) { requirements.push_back("ACE_Ice_Saturation"); }
 }  // MechanicsProblem
 
 void

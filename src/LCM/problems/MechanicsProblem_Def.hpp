@@ -311,7 +311,7 @@ MechanicsProblem::constructEvaluators(
   auto find_node_boundary_indicator =
       std::find(this->requirements.begin(), this->requirements.end(), "node_boundary_indicator");
 
-  auto find_qp_ice_saturation = std::find(this->requirements.begin(), this->requirements.end(), "ACE Ice Saturation");
+  auto find_qp_ice_saturation = std::find(this->requirements.begin(), this->requirements.end(), "ACE_Ice_Saturation");
 
   if (find_cell_boundary_indicator != this->requirements.end()) {
     auto entity = StateStruct::ElemData;
@@ -331,7 +331,7 @@ MechanicsProblem::constructEvaluators(
 
   if (find_qp_ice_saturation != this->requirements.end()) {
     auto entity = StateStruct::ElemData;
-    stateMgr.registerStateVariable("ACE Ice Saturation", dl_->qp_scalar, meshSpecs.ebName, false, &entity);
+    stateMgr.registerStateVariable("ACE_Ice_Saturation", dl_->qp_scalar, meshSpecs.ebName, false, &entity);
   }
 
   // Define Field Names

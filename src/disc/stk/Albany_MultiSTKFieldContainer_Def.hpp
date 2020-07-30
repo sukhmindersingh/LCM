@@ -249,7 +249,7 @@ MultiSTKFieldContainer<Interleaved>::MultiSTKFieldContainer(
   bool const has_face_boundary_indicator = (std::find(req.begin(), req.end(), "face_boundary_indicator") != req.end());
   bool const has_edge_boundary_indicator = (std::find(req.begin(), req.end(), "edge_boundary_indicator") != req.end());
   bool const has_node_boundary_indicator = (std::find(req.begin(), req.end(), "node_boundary_indicator") != req.end());
-  bool const has_qp_ice_saturation       = (std::find(req.begin(), req.end(), "ACE Ice Saturation") != req.end());
+  bool const has_qp_ice_saturation       = (std::find(req.begin(), req.end(), "ACE_Ice_Saturation") != req.end());
   if (has_cell_boundary_indicator) {
     this->cell_boundary_indicator =
         metaData_->template get_field<stk::mesh::FieldBase>(stk::topology::ELEMENT_RANK, "cell_boundary_indicator");
@@ -283,7 +283,7 @@ MultiSTKFieldContainer<Interleaved>::MultiSTKFieldContainer(
     }
   }
   if (has_qp_ice_saturation) {
-    this->qp_ice_saturation = metaData_->get_field(stk::topology::ELEMENT_RANK, "ACE Ice Saturation");
+    this->qp_ice_saturation = metaData_->get_field(stk::topology::ELEMENT_RANK, "ACE_Ice_Saturation");
     if (this->qp_ice_saturation != nullptr) {
       build_qp_ice_saturation = true;
       stk::io::set_field_role(*this->qp_ice_saturation, Ioss::Field::INFORMATION);
