@@ -258,7 +258,7 @@ J2ErosionKernel<EvalT, Traits>::operator()(int cell, int pt) const
                             interpolateVectors(z_above_mean_sea_level_, porosity_from_file_, height) :
                             bulk_porosity_;
 
-  ALBANY_ASSERT(ice_saturation == 0.0, "**** CELL : " << cell << " PT : " << pt << " IS : " << ice_saturation << "\n");
+  ALBANY_DUMP("**** CELL : " << cell << " PT : " << pt << " IS : " << ice_saturation << "\n");
 
   // Compute effective yield strength
   Y = (1.0 - porosity) * soil_yield_strength_ + porosity * ice_saturation * Y;

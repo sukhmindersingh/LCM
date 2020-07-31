@@ -141,7 +141,7 @@ class AbstractSTKFieldContainer : public AbstractFieldContainer
     return node_boundary_indicator;
   }
 
-  stk::mesh::FieldBase*
+  ScalarFieldType*
   getQPIceSaturation()
   {
     ALBANY_ASSERT(qp_ice_saturation != nullptr);
@@ -320,7 +320,7 @@ class AbstractSTKFieldContainer : public AbstractFieldContainer
   stk::mesh::FieldBase* face_boundary_indicator{nullptr};
   stk::mesh::FieldBase* edge_boundary_indicator{nullptr};
   stk::mesh::FieldBase* node_boundary_indicator{nullptr};
-  stk::mesh::FieldBase* qp_ice_saturation{nullptr};
+  ScalarFieldType*      qp_ice_saturation{nullptr};
 
   // Required for Peridynamics in LCM
   SphereVolumeFieldType* sphereVolume_field{nullptr};

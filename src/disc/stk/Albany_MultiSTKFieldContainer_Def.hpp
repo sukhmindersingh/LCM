@@ -283,7 +283,7 @@ MultiSTKFieldContainer<Interleaved>::MultiSTKFieldContainer(
     }
   }
   if (has_qp_ice_saturation) {
-    this->qp_ice_saturation = metaData_->get_field(stk::topology::ELEMENT_RANK, "ACE_Ice_Saturation");
+    this->qp_ice_saturation = metaData_->template get_field<SFT>(stk::topology::ELEMENT_RANK, "ACE_Ice_Saturation_1");
     if (this->qp_ice_saturation != nullptr) {
       build_qp_ice_saturation = true;
       stk::io::set_field_role(*this->qp_ice_saturation, Ioss::Field::INFORMATION);
