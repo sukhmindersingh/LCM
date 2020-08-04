@@ -903,6 +903,7 @@ STKDiscretization::writeSolutionToFile(Thyra_Vector const& soln, double const ti
         if (time_label != time) *out << " with label " << time_label;
         *out << " to index " << out_step << " in file " << stkMeshStruct->exoOutFile << std::endl;
       }
+      //writeMatrixMarket(Teuchos::rcpFromRef(soln), "soln", out_step); 
     }
   }
   outputInterval++;
@@ -957,6 +958,7 @@ STKDiscretization::writeSolutionMVToFile(const Thyra_MultiVector& soln, double c
         if (time_label != time) *out << " with label " << time_label;
         *out << " to index " << out_step << " in file " << stkMeshStruct->exoOutFile << std::endl;
       }
+      //writeMatrixMarket(Teuchos::rcpFromRef(soln), "soln", out_step); 
     }
   }
   outputInterval++;

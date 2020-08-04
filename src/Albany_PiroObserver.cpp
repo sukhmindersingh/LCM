@@ -46,8 +46,11 @@ PiroObserver::observeSolution(Thyra_Vector const& solution, const ST stamp)
 void
 PiroObserver::observeSolution(Thyra_Vector const& solution, Thyra_Vector const& solution_dot, const ST stamp)
 {
+  Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::VerboseObjectBase::getDefaultOStream();
+  *out << "IKT calling observeSolution with time-stamp = " << stamp << "...\n"; 
   this->observeSolutionImpl(solution, solution_dot, stamp);
   stepper_counter_++;
+  *out << "IKT ...done!\n"; 
 }
 
 void

@@ -1036,6 +1036,7 @@ Application::computeGlobalResidualImpl(
     Teuchos::RCP<Thyra_Vector> const&      f,
     double                                 dt)
 {
+  *out << "IKT inside computeGlobalResidualImpl call for time = " << current_time << "\n";  
   TEUCHOS_FUNC_TIME_MONITOR("Albany Fill: Residual");
   using EvalT = PHAL::AlbanyTraits::Residual;
   postRegSetup<EvalT>();
@@ -1151,15 +1152,18 @@ Application::computeGlobalResidualImpl(
 
   // Apply Dirichlet conditions using dfm (Dirchelt Field Manager)
 
+  *out << "IKT computeGlobalResidualImpl applying DBCs at time = " << current_time << "...\n"; 
   if (dfm != Teuchos::null) {
     PHAL::Workset workset = set_dfm_workset(current_time, x, x_dot, x_dotdot, f);
 
     // FillType template argument used to specialize Sacado
     dfm->evaluateFields<EvalT>(workset);
   }
+  *out << "...done!\n"; 
 
   // scale residual by scaleVec_ if scaleBCdofs is on
   if (scaleBCdofs == true) { Thyra::ele_wise_scale<ST>(*scaleVec_, f.ptr()); }
+  *out << "IKT finished computeGlobalResidualImpl call for time = " << current_time << "\n";  
 }
 
 void

@@ -1,3 +1,7 @@
+
+add_subdirectory(explicit)
+add_subdirectory(implicit)
+
 if(NOT ALBANY_PARALLEL_ONLY)
   # Name the test with the directory name
   get_filename_component(testName ${CMAKE_CURRENT_SOURCE_DIR} NAME)
