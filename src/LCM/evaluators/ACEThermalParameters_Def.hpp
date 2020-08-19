@@ -399,13 +399,19 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
       ScalarT water_thermal_cond_eb = this->queryElementBlockParameterMap(eb_name, water_thermal_cond_map_);
       ScalarT soil_thermal_cond_eb  = this->queryElementBlockParameterMap(eb_name, soil_thermal_cond_map_);
       if (sediment_given == true) {
-        thermal_conductivity_(cell, qp) =
-            (porosity_eb * ((ice_thermal_cond_eb * icurr) + (water_thermal_cond_eb * wcurr))) +
-            ((1.0 - porosity_eb) * calc_soil_thermal_cond);
+        //thermal_conductivity_(cell, qp) =
+        //    (porosity_eb * ((ice_thermal_cond_eb * icurr) + (water_thermal_cond_eb * wcurr))) +
+        //    ((1.0 - porosity_eb) * calc_soil_thermal_cond);
+        thermal_conductivity_(cell, qp) = pow(ice_thermal_cond_eb, (icurr * porosity_eb)) *
+                                          pow(water_thermal_cond_eb, (wcurr * porosity_eb)) *
+                                          pow(calc_soil_thermal_cond, (1.0 - porosity_eb));
       } else {
-        thermal_conductivity_(cell, qp) =
-            (porosity_eb * ((ice_thermal_cond_eb * icurr) + (water_thermal_cond_eb * wcurr))) +
-            ((1.0 - porosity_eb) * soil_thermal_cond_eb);
+        //thermal_conductivity_(cell, qp) =
+        //    (porosity_eb * ((ice_thermal_cond_eb * icurr) + (water_thermal_cond_eb * wcurr))) +
+        //    ((1.0 - porosity_eb) * soil_thermal_cond_eb);
+        thermal_conductivity_(cell, qp) = pow(ice_thermal_cond_eb, (icurr * porosity_eb)) *
+                                          pow(water_thermal_cond_eb, (wcurr * porosity_eb)) *
+                                          pow(soil_thermal_cond_eb, (1.0 - porosity_eb));
       }
 
       // Update the material thermal inertia term
