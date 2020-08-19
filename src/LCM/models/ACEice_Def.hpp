@@ -68,13 +68,13 @@ ACEiceMiniKernel<EvalT, Traits>::ACEiceMiniKernel(
         "in "
         "ACE Ocean Salinity File must match.");
   }
-  if (p->isParameter("ACE Porosity File") == true) {
-    auto const filename = p->get<std::string>("ACE Porosity File");
+  if (p->isParameter("ACE_Porosity File") == true) {
+    auto const filename = p->get<std::string>("ACE_Porosity File");
     porosity_from_file_ = vectorFromFile(filename);
     ALBANY_ASSERT(
         z_above_mean_sea_level_.size() == porosity_from_file_.size(),
         "*** ERROR: Number of z values and number of porosity values in "
-        "ACE Porosity File must match.");
+        "ACE_Porosity File must match.");
   }
 
   ALBANY_ASSERT(
@@ -99,14 +99,14 @@ ACEiceMiniKernel<EvalT, Traits>::ACEiceMiniKernel(
   setDependentField("ACE Temperature", dl->qp_scalar);
 
   // define the evaluated fields
-  setEvaluatedField("ACE Bluff Salinity", dl->qp_scalar);
-  setEvaluatedField("ACE Ice Saturation", dl->qp_scalar);
-  setEvaluatedField("ACE Density", dl->qp_scalar);
-  setEvaluatedField("ACE Heat Capacity", dl->qp_scalar);
-  setEvaluatedField("ACE Thermal Conductivity", dl->qp_scalar);
-  setEvaluatedField("ACE Thermal Inertia", dl->qp_scalar);
-  setEvaluatedField("ACE Water Saturation", dl->qp_scalar);
-  setEvaluatedField("ACE Porosity", dl->qp_scalar);
+  setEvaluatedField("ACE_Bluff_Salinity", dl->qp_scalar);
+  setEvaluatedField("ACE_Ice_Saturation", dl->qp_scalar);
+  setEvaluatedField("ACE_Density", dl->qp_scalar);
+  setEvaluatedField("ACE_Heat_Capacity", dl->qp_scalar);
+  setEvaluatedField("ACE_Thermal_Conductivity", dl->qp_scalar);
+  setEvaluatedField("ACE_Thermal_Inertia", dl->qp_scalar);
+  setEvaluatedField("ACE_Water_Saturation", dl->qp_scalar);
+  setEvaluatedField("ACE_Porosity", dl->qp_scalar);
   setEvaluatedField("ACE Temperature Dot", dl->qp_scalar);
   setEvaluatedField("Failure Indicator", dl->cell_scalar);
   setEvaluatedField("ACE Exposure Time", dl->qp_scalar);
@@ -132,43 +132,43 @@ ACEiceMiniKernel<EvalT, Traits>::ACEiceMiniKernel(
 
   // ACE Bluff salinity
   addStateVariable(
-      "ACE Bluff Salinity", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("Output ACE Bluff Salinity", false));
+      "ACE_Bluff_Salinity", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("Output ACE_Bluff_Salinity", false));
 
   // ACE Ice saturation
   addStateVariable(
-      "ACE Ice Saturation",
+      "ACE_Ice_Saturation",
       dl->qp_scalar,
       "scalar",
       ice_saturation_init_,
       true,
-      p->get<bool>("Output ACE Ice Saturation", false));
+      p->get<bool>("Output ACE_Ice_Saturation", false));
 
-  // ACE Density
-  addStateVariable("ACE Density", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("Output ACE Density", false));
+  // ACE_Density
+  addStateVariable("ACE_Density", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("Output ACE_Density", false));
 
-  // ACE Heat Capacity
+  // ACE_Heat_Capacity
   addStateVariable(
-      "ACE Heat Capacity", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("Output ACE Heat Capacity", false));
+      "ACE_Heat_Capacity", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("Output ACE_Heat_Capacity", false));
 
-  // ACE Thermal Conductivity
+  // ACE_Thermal_Conductivity
   addStateVariable(
-      "ACE Thermal Conductivity",
+      "ACE_Thermal_Conductivity",
       dl->qp_scalar,
       "scalar",
       0.0,
       false,
-      p->get<bool>("Output ACE Thermal Conductivity", false));
+      p->get<bool>("Output ACE_Thermal_Conductivity", false));
 
-  // ACE Thermal Inertia
+  // ACE_Thermal_Inertia
   addStateVariable(
-      "ACE Thermal Inertia", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("Output ACE Thermal Inertia", false));
+      "ACE_Thermal_Inertia", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("Output ACE_Thermal_Inertia", false));
 
-  // ACE Water Saturation
+  // ACE_Water_Saturation
   addStateVariable(
-      "ACE Water Saturation", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("ACE Water Saturation", false));
+      "ACE_Water_Saturation", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("ACE_Water_Saturation", false));
 
-  // ACE Porosity
-  addStateVariable("ACE Porosity", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("ACE Porosity", false));
+  // ACE_Porosity
+  addStateVariable("ACE_Porosity", dl->qp_scalar, "scalar", 0.0, false, p->get<bool>("ACE_Porosity", false));
 
   // ACE Temperature is already registered in Mechanics Problem.
 
@@ -212,14 +212,14 @@ ACEiceMiniKernel<EvalT, Traits>::init(
   Fp_               = *output_fields[Fp_string];
   eqps_             = *output_fields[eqps_string];
   yield_surf_       = *output_fields[yieldSurface_string];
-  bluff_salinity_   = *output_fields["ACE Bluff Salinity"];
-  ice_saturation_   = *output_fields["ACE Ice Saturation"];
-  density_          = *output_fields["ACE Density"];
-  heat_capacity_    = *output_fields["ACE Heat Capacity"];
-  thermal_cond_     = *output_fields["ACE Thermal Conductivity"];
-  thermal_inertia_  = *output_fields["ACE Thermal Inertia"];
-  water_saturation_ = *output_fields["ACE Water Saturation"];
-  porosity_         = *output_fields["ACE Porosity"];
+  bluff_salinity_   = *output_fields["ACE_Bluff_Salinity"];
+  ice_saturation_   = *output_fields["ACE_Ice_Saturation"];
+  density_          = *output_fields["ACE_Density"];
+  heat_capacity_    = *output_fields["ACE_Heat_Capacity"];
+  thermal_cond_     = *output_fields["ACE_Thermal_Conductivity"];
+  thermal_inertia_  = *output_fields["ACE_Thermal_Inertia"];
+  water_saturation_ = *output_fields["ACE_Water_Saturation"];
+  porosity_         = *output_fields["ACE_Porosity"];
   tdot_             = *output_fields["ACE Temperature Dot"];
   failed_           = *output_fields["Failure Indicator"];
   exposure_time_    = *output_fields["ACE Exposure Time"];
@@ -228,7 +228,7 @@ ACEiceMiniKernel<EvalT, Traits>::init(
   Fp_old_             = (*workset.stateArrayPtr)[Fp_string + "_old"];
   eqps_old_           = (*workset.stateArrayPtr)[eqps_string + "_old"];
   T_old_              = (*workset.stateArrayPtr)["ACE Temperature_old"];
-  ice_saturation_old_ = (*workset.stateArrayPtr)["ACE Ice Saturation_old"];
+  ice_saturation_old_ = (*workset.stateArrayPtr)["ACE_Ice_Saturation_old"];
 
   auto& disc                    = *workset.disc;
   auto& stk_disc                = dynamic_cast<Albany::STKDiscretization&>(disc);
@@ -251,7 +251,9 @@ ACEiceMiniKernel<EvalT, Traits>::init(
     for (auto pt = 0; pt < num_pts_; ++pt) {
       auto const height = Sacado::Value<ScalarT>::eval(coords(cell, pt, 2));
       ScalarT    sal    = salinity_base_;
-      if (salinity_.size() > 0) { sal = interpolateVectors(z_above_mean_sea_level_, salinity_, height); }
+      if (salinity_.size() > 0) {
+        sal = interpolateVectors(z_above_mean_sea_level_, salinity_, height);
+      }
       bluff_salinity_(cell, pt) = sal;
     }
   }
@@ -314,7 +316,9 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
     ScalarT const  zero_sal(0.0);
     ScalarT const  sal_curr  = bluff_salinity_(cell, pt);
     ScalarT        ocean_sal = salinity_base_;
-    if (ocean_salinity_.size() > 0) { ocean_sal = interpolateVectors(time_, ocean_salinity_, current_time); }
+    if (ocean_salinity_.size() > 0) {
+      ocean_sal = interpolateVectors(time_, ocean_salinity_, current_time);
+    }
     ScalarT const sal_diff   = ocean_sal - sal_curr;
     ScalarT const sal_grad   = sal_diff / cell_half_width;
     ScalarT const sal_update = sal_grad * delta_time * factor;
@@ -327,7 +331,9 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
 
   // Calculate melting temperature
   ScalarT sal15(0.0);
-  if (sal > 0.0) { sal15 = std::sqrt(sal * sal * sal); }
+  if (sal > 0.0) {
+    sal15 = std::sqrt(sal * sal * sal);
+  }
   auto const pressure_fixed = 1.0;
   // Tmelt is in Kelvin
   ScalarT const Tmelt =
@@ -441,7 +447,9 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   Tensor Fpn(num_dims_);
 
   for (int i{0}; i < num_dims_; ++i) {
-    for (int j{0}; j < num_dims_; ++j) { Fpn(i, j) = ScalarT(Fp_old_(cell, pt, i, j)); }
+    for (int j{0}; j < num_dims_; ++j) {
+      Fpn(i, j) = ScalarT(Fp_old_(cell, pt, i, j));
+    }
   }
 
   // compute trial state
@@ -498,13 +506,17 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
     Tensor const Fpnew = expA * Fpn;
 
     for (int i{0}; i < num_dims_; ++i) {
-      for (int j{0}; j < num_dims_; ++j) { Fp_(cell, pt, i, j) = Fpnew(i, j); }
+      for (int j{0}; j < num_dims_; ++j) {
+        Fp_(cell, pt, i, j) = Fpnew(i, j);
+      }
     }
   } else {
     eqps_(cell, pt) = eqps_old_(cell, pt);
 
     for (int i{0}; i < num_dims_; ++i) {
-      for (int j{0}; j < num_dims_; ++j) { Fp_(cell, pt, i, j) = Fpn(i, j); }
+      for (int j{0}; j < num_dims_; ++j) {
+        Fp_(cell, pt, i, j) = Fpn(i, j);
+      }
     }
   }
 
@@ -518,7 +530,9 @@ ACEiceMiniKernel<EvalT, Traits>::operator()(int cell, int pt) const
   sigma = pressure * I + s / J_(cell, pt);
 
   for (int i(0); i < num_dims_; ++i) {
-    for (int j(0); j < num_dims_; ++j) { stress_(cell, pt, i, j) = sigma(i, j); }
+    for (int j(0); j < num_dims_; ++j) {
+      stress_(cell, pt, i, j) = sigma(i, j);
+    }
   }
 
   // Determine if critical stress is exceeded

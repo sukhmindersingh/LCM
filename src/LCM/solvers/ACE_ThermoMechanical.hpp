@@ -12,14 +12,53 @@
 #include "Albany_AbstractSTKMeshStruct.hpp"
 #include "Albany_Application.hpp"
 #include "Albany_MaterialDatabase.hpp"
+#include "Albany_ModelEvaluator.hpp"
 #include "Albany_SolverFactory.hpp"
 #include "Piro_NOXSolver.hpp"
 #include "StateVarUtils.hpp"
+#include "Thyra_AdaptiveSolutionManager.hpp"
 #include "Thyra_DefaultProductVector.hpp"
 #include "Thyra_DefaultProductVectorSpace.hpp"
+#include "Thyra_ModelEvaluatorDelegatorBase.hpp"
 #include "Thyra_ResponseOnlyModelEvaluatorBase.hpp"
 
 namespace LCM {
+
+class ACEAdaptiveState : public Thyra::AdaptiveStateBase
+{
+ public:
+  ACEAdaptiveState(Teuchos::RCP<Thyra::ModelEvaluator<ST>> const& model) : AdaptiveStateBase(model) {}
+  ~ACEAdaptiveState() {}
+  void
+  buildSolutionGroup()
+  {
+  }
+};
+
+class ACEModelEvaluatorDelegator : public Thyra::ModelEvaluatorDelegatorBase<ST>
+{
+ public:
+  ACEModelEvaluatorDelegator(Teuchos::RCP<Thyra::ModelEvaluator<ST>> const& model_rcp) : model_rcp_(model_rcp) {}
+  Teuchos::RCP<Thyra::ModelEvaluator<ST>>
+  getNonconstUnderlyingModel()
+  {
+    return model_rcp_;
+  }
+
+  ModelEvaluatorBase::OutArgs<ST>
+  createOutArgsImpl() const
+  {
+    return ModelEvaluatorBase::OutArgs<ST>();
+  }
+
+  void
+  evalModelImpl(ModelEvaluatorBase::InArgs<ST> const&, ModelEvaluatorBase::OutArgs<ST> const&) const
+  {
+  }
+
+ private:
+  Teuchos::RCP<Thyra::ModelEvaluator<ST>> model_rcp_;
+};
 
 ///
 /// ACEThermoMechanical coupling class
@@ -136,34 +175,46 @@ class ACEThermoMechanical : public Thyra::ResponseOnlyModelEvaluatorBase<ST>
 
   void
   AdvanceThermalDynamics(
-      const int    subdomain,
-      const bool   is_initial_state,
-      const double current_time,
-      const double next_time,
-      const double time_step) const;
+      int const    subdomain,
+      bool const   is_initial_state,
+      double const current_time,
+      double const next_time,
+      double const time_step) const;
 
   void
-  AdvanceMechanicsDynamics(
-      const int    subdomain,
-      const bool   is_initial_state,
-      const double current_time,
-      const double next_time,
-      const double time_step) const;
+  AdvanceMechanicalDynamics(
+      int const    subdomain,
+      bool const   is_initial_state,
+      double const current_time,
+      double const next_time,
+      double const time_step) const;
 
   bool
   continueSolve() const;
 
   void
-  createSolversAppsDiscsMEs(const int file_index, const double this_time = 0.0) const;
+  createSolversAppsDiscsMEs(int const file_index, double const this_time = 0.0) const;
+
+  void
+  createThermalSolverAppDiscME(int const file_index, double const this_time) const;
+
+  void
+  createMechanicalSolverAppDiscME(int const file_index, double const this_time) const;
 
   void
   doQuasistaticOutput(ST const time) const;
 
   void
+  doDynamicInitialOutput(ST const time, int const subdomain, int const stop) const;
+
+  void 
+  renamePrevWrittenExoFiles(const int subdomain, const int file_index) const; 
+
+  void
   setExplicitUpdateInitialGuessForCoupling(ST const current_time, ST const time_step) const;
 
   void
-  setDynamicICVecsAndDoOutput(ST const time) const;
+  setICVecs(ST const time, int const subdomain) const;
 
   std::vector<Teuchos::RCP<Albany::SolverFactory>>                             solver_factories_;
   mutable std::vector<Teuchos::RCP<Thyra::ResponseOnlyModelEvaluatorBase<ST>>> solvers_;
@@ -206,12 +257,10 @@ class ACEThermoMechanical : public Thyra::ResponseOnlyModelEvaluatorBase<ST>
   mutable std::vector<Teuchos::RCP<Thyra::VectorBase<ST>>>     this_xdot_;
   mutable std::vector<Teuchos::RCP<Thyra::VectorBase<ST>>>     this_xdotdot_;
 
-  // std::vector for holding names of previous Exodus output files, for restarts.
-  mutable std::vector<std::string> prev_exo_outfile_name_;
-  // variable with previous thermal Exodus output file, for mechanics restarts
+  // variable with previous thermal Exodus output file, for mechanical restarts
   mutable std::string prev_thermal_exo_outfile_name_;
-  // variable with previous mechanics Exodus output file, for thermal restarts
-  mutable std::string prev_mechanics_exo_outfile_name_;
+  // variable with previous mechanical Exodus output file, for thermal restarts
+  mutable std::string prev_mechanical_exo_outfile_name_;
 
   mutable std::vector<LCM::StateArrays> internal_states_;
   mutable std::vector<bool>             do_outputs_;
@@ -225,7 +274,7 @@ class ACEThermoMechanical : public Thyra::ResponseOnlyModelEvaluatorBase<ST>
   enum PROB_TYPE
   {
     THERMAL,
-    MECHANICS
+    MECHANICAL
   };
 
   // std::vector mapping subdomain number to PROB_TYPE;

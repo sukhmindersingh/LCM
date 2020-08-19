@@ -1,11 +1,4 @@
 LCM:
-  # IKT FIXME - change this material model to something
-  # meaningful.  The code commented out below was 
-  # for the thermo-mechanical version of this problem
-  # with the mechanical part turned off. 
-  #
-  #For now, I just made everything linear elastic.
-  #
   ElementBlocks:
     permafrost1:
       material: Permafrost
@@ -16,26 +9,55 @@ LCM:
   Materials:
     Permafrost:
       Material Model:
-        Model Name: Linear Elastic
+        Model Name: J2 Erosion
       Elastic Modulus:
         Elastic Modulus Type: Constant
-        Value: 1.0e+09
+        Value: 0.1e+09
       Poissons Ratio:
         Poissons Ratio Type: Constant
+        Value: 0.2
+      Yield Strength:
+        Yield Strength Type: Constant
+        Value: 2.5e+06
+      Hardening Modulus:
+        Hardening Modulus Type: Constant
         Value: 0.0
-      Density: 1.0e+03
+      Saturation Modulus: 0.0
+      Saturation Exponent: 0.0
+      ACE Bulk Porosity: 0.60  # Used if porosity.txt not given.
+      ACE_Porosity File: './porosity.txt'
+      ACE Z Depth File: './depth.txt'
+      ACE Soil Yield Strength: 0.55e+06
+      Density: 800.0
+#      Body Force:
+#        Body Force Type: Constant
+#        Value: [0.0, 0.0, -8.00e+03]
       Output Cauchy Stress: true
+      Output eqps: true
     Ice:
       Material Model:
-        Model Name: Linear Elastic
+        Model Name: J2 Erosion
       Elastic Modulus:
         Elastic Modulus Type: Constant
-        Value: 1.0e+09
+        Value: 0.15e+09
       Poissons Ratio:
         Poissons Ratio Type: Constant
+        Value: 0.30
+      Yield Strength:
+        Yield Strength Type: Constant
+        Value: 3.0e+06
+      Hardening Modulus:
+        Hardening Modulus Type: Constant
         Value: 0.0
-      Density: 1.0e+03
+      Saturation Modulus: 0.0
+      Saturation Exponent: 0.0
+      ACE Bulk Porosity: 1.00  # Used if porosity.txt not given.
+      Density: 920.0
+#      Body Force:
+#        Body Force Type: Constant
+#        Value: [0.0, 0.0, -9.20e+03]
       Output Cauchy Stress: true
+      Output eqps: true
 ...
       
   #Materials:
@@ -63,7 +85,7 @@ LCM:
   #    Output Cauchy Stress: true
   #    Output eqps: true
   #    Output ACE Ice Saturation: true
-  #    Output ACE Water Saturation: true
+  #    Output ACE_Water_Saturation: true
   #    ACE Ice Density: 920.0 #[kg/m3]
   #    ACE Water Density: 1000.0 #[kg/m3]
   #    ACE Sediment Density: 2650.0 #[kg/m3]
@@ -81,7 +103,7 @@ LCM:
   #    ACE Salinity File: './bluff_salinity.txt'
   #    ACE Salt Enhanced D: 0.0  # Like enhanced molecular diffusion coef.
   #    ACE Bulk Porosity: 0.60  # Used if porosity.txt not given.
-  #    ACE Porosity File: './porosity.txt'
+  #    ACE_Porosity File: './porosity.txt'
   #    ACE Latent Heat: 334.0e+04 #[J/kg]
   #    ACE Z Depth File: './depth.txt'
   #    ACE Time File: './time_fake.txt'  # {0.0, 10368000.0}
@@ -112,7 +134,7 @@ LCM:
   #    Output Cauchy Stress: true
   #    Output eqps: true
   #    Output ACE Ice Saturation: true
-  #    Output ACE Water Saturation: true
+  #    Output ACE_Water_Saturation: true
   #    ACE Ice Density: 920.0 #[kg/m3]
   #    ACE Water Density: 1000.0 #[kg/m3]
   #    ACE Sediment Density: 2650.0 #[kg/m3]

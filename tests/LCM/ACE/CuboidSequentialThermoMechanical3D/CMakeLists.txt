@@ -5,14 +5,24 @@ if(NOT ALBANY_PARALLEL_ONLY)
   # Copy Input file from source to binary dir
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/coupled.yaml
                  ${CMAKE_CURRENT_BINARY_DIR}/coupled.yaml COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/coupled-thermal-explicit.yaml
+                 ${CMAKE_CURRENT_BINARY_DIR}/coupled-thermal-explicit.yaml COPYONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/coupled_thermalOnly.yaml
                  ${CMAKE_CURRENT_BINARY_DIR}/coupled_thermalOnly.yaml COPYONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/coupled_vardt.yaml
                  ${CMAKE_CURRENT_BINARY_DIR}/coupled_vardt.yaml COPYONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/thermal.yaml
                  ${CMAKE_CURRENT_BINARY_DIR}/thermal.yaml COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/thermal-explicit.yaml
+                 ${CMAKE_CURRENT_BINARY_DIR}/thermal-explicit.yaml COPYONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/thermal_standalone.yaml
                  ${CMAKE_CURRENT_BINARY_DIR}/thermal_standalone.yaml COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/thermal_standalone_explicit.yaml
+                 ${CMAKE_CURRENT_BINARY_DIR}/thermal_standalone_explicit.yaml COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/thermal_standalone_explicit_no_lumping.yaml
+                 ${CMAKE_CURRENT_BINARY_DIR}/thermal_standalone_explicit_no_lumping.yaml COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/thermal_standalone_explicit_rythmos.yaml
+                 ${CMAKE_CURRENT_BINARY_DIR}/thermal_standalone_explicit_rythmos.yaml COPYONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mechanical_standalone_restart.yaml
                  ${CMAKE_CURRENT_BINARY_DIR}/mechanical_standalone_restart.yaml COPYONLY)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mechanical_standalone_restart_explicit.yaml
@@ -70,7 +80,7 @@ if(NOT ALBANY_PARALLEL_ONLY)
   # Name the test with the directory name
   get_filename_component(testName ${CMAKE_CURRENT_SOURCE_DIR} NAME)
   # Add the tests
-  set(OUTFILE "thermal.e-s.119")
+  set(OUTFILE "thermal.e-s.17")
   set(REF_FILE "${CMAKE_CURRENT_BINARY_DIR}/../CuboidThermoMechanical3D/grid.e")
   add_test(
     NAME ACE_${testName}
@@ -83,8 +93,8 @@ if(NOT ALBANY_PARALLEL_ONLY)
   set_tests_properties(ACE_${testName}
                        PROPERTIES DEPENDS CuboidThermoMechanical3D_ThermalOnly)
   
-  set(OUTFILE "thermal-vardt.e-s.40")
-  set(REF_FILE "thermal.e-s.119")
+  set(OUTFILE "thermal-vardt.e-s.8")
+  set(REF_FILE "thermal.e-s.17")
   add_test(
     NAME ACE_${testName}_vardt
     COMMAND

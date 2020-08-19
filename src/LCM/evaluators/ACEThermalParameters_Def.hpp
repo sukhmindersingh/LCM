@@ -19,23 +19,23 @@ template <typename EvalT, typename Traits>
 ACEThermalParameters<EvalT, Traits>::ACEThermalParameters(
     Teuchos::ParameterList&              p,
     const Teuchos::RCP<Albany::Layouts>& dl)
-    : thermal_conductivity_(p.get<std::string>("ACE Thermal Conductivity QP Variable Name"), dl->qp_scalar),
+    : thermal_conductivity_(p.get<std::string>("ACE_Thermal_Conductivity QP Variable Name"), dl->qp_scalar),
       thermal_cond_grad_at_nodes_(
-          p.get<std::string>("ACE Thermal Conductivity Gradient Node Variable Name"),
+          p.get<std::string>("ACE_Thermal_Conductivity Gradient Node Variable Name"),
           dl->node_vector),
       thermal_cond_grad_at_qps_(
-          p.get<std::string>("ACE Thermal Conductivity Gradient QP Variable Name"),
+          p.get<std::string>("ACE_Thermal_Conductivity Gradient QP Variable Name"),
           dl->qp_vector),
       wgradbf_(p.get<std::string>("Weighted Gradient BF Name"), dl->node_qp_vector),
       bf_(p.get<std::string>("BF Name"), dl->node_qp_scalar),
-      thermal_inertia_(p.get<std::string>("ACE Thermal Inertia QP Variable Name"), dl->qp_scalar),
-      latent_heat_source_(p.get<std::string>("ACE Latent Heat Source QP Variable Name"), dl->qp_scalar),
-      bluff_salinity_(p.get<std::string>("ACE Bluff Salinity QP Variable Name"), dl->qp_scalar),
-      ice_saturation_(p.get<std::string>("ACE Ice Saturation QP Variable Name"), dl->qp_scalar),
-      density_(p.get<std::string>("ACE Density QP Variable Name"), dl->qp_scalar),
-      heat_capacity_(p.get<std::string>("ACE Heat Capacity QP Variable Name"), dl->qp_scalar),
-      water_saturation_(p.get<std::string>("ACE Water Saturation QP Variable Name"), dl->qp_scalar),
-      porosity_(p.get<std::string>("ACE Porosity QP Variable Name"), dl->qp_scalar),
+      thermal_inertia_(p.get<std::string>("ACE_Thermal_Inertia QP Variable Name"), dl->qp_scalar),
+      latent_heat_source_(p.get<std::string>("ACE_Latent_Heat_Source QP Variable Name"), dl->qp_scalar),
+      bluff_salinity_(p.get<std::string>("ACE_Bluff_Salinity QP Variable Name"), dl->qp_scalar),
+      ice_saturation_(p.get<std::string>("ACE_Ice_Saturation QP Variable Name"), dl->qp_scalar),
+      density_(p.get<std::string>("ACE_Density QP Variable Name"), dl->qp_scalar),
+      heat_capacity_(p.get<std::string>("ACE_Heat_Capacity QP Variable Name"), dl->qp_scalar),
+      water_saturation_(p.get<std::string>("ACE_Water_Saturation QP Variable Name"), dl->qp_scalar),
+      porosity_(p.get<std::string>("ACE_Porosity QP Variable Name"), dl->qp_scalar),
       temperature_(p.get<std::string>("ACE Temperature QP Variable Name"), dl->qp_scalar)
 {
   Teuchos::ParameterList* cond_list = p.get<Teuchos::ParameterList*>("Parameter List");
@@ -122,13 +122,17 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
   // Initialize thermal_cond_grad_at_nodes to zero
   for (std::size_t cell = 0; cell < workset_size_; ++cell) {
     for (std::size_t node = 0; node < num_nodes_; ++node) {
-      for (std::size_t ndim = 0; ndim < num_dims_; ++ndim) { thermal_cond_grad_at_nodes_(cell, node, ndim) = 0.0; }
+      for (std::size_t ndim = 0; ndim < num_dims_; ++ndim) {
+        thermal_cond_grad_at_nodes_(cell, node, ndim) = 0.0;
+      }
     }
   }
   // Initialize thermal_cond_grad_at_qps to zero
   for (std::size_t cell = 0; cell < workset_size_; ++cell) {
     for (std::size_t qp = 0; qp < num_qps_; ++qp) {
-      for (std::size_t ndim = 0; ndim < num_dims_; ++ndim) { thermal_cond_grad_at_qps_(cell, qp, ndim) = 0.0; }
+      for (std::size_t ndim = 0; ndim < num_dims_; ++ndim) {
+        thermal_cond_grad_at_qps_(cell, qp, ndim) = 0.0;
+      }
     }
   }
 
@@ -168,7 +172,9 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
       std::vector<RealType> const salinity_eb      = this->queryElementBlockParameterMap(eb_name, salinity_map_);
       std::vector<RealType> const z_above_mean_sea_level_eb =
           this->queryElementBlockParameterMap(eb_name, z_above_mean_sea_level_map_);
-      if (salinity_eb.size() > 0) { sal_eb = interpolateVectors(z_above_mean_sea_level_eb, salinity_eb, height); }
+      if (salinity_eb.size() > 0) {
+        sal_eb = interpolateVectors(z_above_mean_sea_level_eb, salinity_eb, height);
+      }
       bluff_salinity_(cell, qp)                = sal_eb;
       std::vector<RealType> const time_eb      = this->queryElementBlockParameterMap(eb_name, time_map_);
       std::vector<RealType> const sea_level_eb = this->queryElementBlockParameterMap(eb_name, sea_level_map_);
@@ -202,7 +208,9 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
         // make it just a std::vector, to avoid creating and querying a map.
         ScalarT const         zero_sal(0.0);
         std::vector<RealType> ocean_salinity_eb = this->queryElementBlockParameterMap(eb_name, ocean_salinity_map_);
-        if (ocean_salinity_eb.size() > 0) { ocean_sal = interpolateVectors(time_eb, ocean_salinity_eb, current_time); }
+        if (ocean_salinity_eb.size() > 0) {
+          ocean_sal = interpolateVectors(time_eb, ocean_salinity_eb, current_time);
+        }
         ScalarT const sal_diff   = ocean_sal - sal_curr;
         ScalarT const sal_grad   = sal_diff / cell_half_width;
         ScalarT const sal_update = sal_grad * delta_time * factor;
@@ -215,7 +223,9 @@ ACEThermalParameters<EvalT, Traits>::evaluateFields(typename Traits::EvalData wo
 
       // Calculate melting temperature
       ScalarT sal15(0.0);
-      if (sal > 0.0) { sal15 = std::sqrt(sal * sal * sal); }
+      if (sal > 0.0) {
+        sal15 = std::sqrt(sal * sal * sal);
+      }
       ScalarT const pressure_fixed = 1.0;
       // Tmelt is in Kelvin
       ScalarT const Tmelt =
@@ -445,9 +455,9 @@ ACEThermalParameters<EvalT, Traits>::getValidThermalCondParameters() const
 {
   Teuchos::RCP<Teuchos::ParameterList> valid_pl = rcp(new Teuchos::ParameterList("Valid ACE Thermal Parameters"));
   valid_pl->set<double>(
-      "ACE Thermal Conductivity Value", 1.0, "Constant thermal conductivity value across element block");
-  valid_pl->set<double>("ACE Thermal Inertia Value", 1.0, "Constant thermal inertia value across element block");
-  valid_pl->set<double>("ACE Latent Heat Source Value", 1.0, "Constant latent heat source value across element block");
+      "ACE_Thermal_Conductivity Value", 1.0, "Constant thermal conductivity value across element block");
+  valid_pl->set<double>("ACE_Thermal_Inertia Value", 1.0, "Constant thermal inertia value across element block");
+  valid_pl->set<double>("ACE_Latent_Heat_Source Value", 1.0, "Constant latent heat source value across element block");
   valid_pl->set<double>("ACE Ice Density", 920.0, "Constant value of ice density in element block");
   valid_pl->set<double>("ACE Water Density", 1000.0, "Constant value of water density in element block");
   valid_pl->set<double>("ACE Sediment Density", 2650.0, "Constant value of sediment density in element block");
@@ -477,16 +487,16 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
   for (int i = 0; i < eb_names_.size(); i++) {
     std::string eb_name = eb_names_[i];
     const_thermal_conduct_map_[eb_name] =
-        material_db_->getElementBlockParam<RealType>(eb_name, "ACE Thermal Conductivity Value", -1.0);
+        material_db_->getElementBlockParam<RealType>(eb_name, "ACE_Thermal_Conductivity Value", -1.0);
     if (const_thermal_conduct_map_[eb_name] != -1.0) {
       ALBANY_ASSERT(
-          (const_thermal_conduct_map_[eb_name] > 0.0), "*** ERROR: ACE Thermal Conductivity Value must be positive!");
+          (const_thermal_conduct_map_[eb_name] > 0.0), "*** ERROR: ACE_Thermal_Conductivity Value must be positive!");
     }
     const_thermal_inertia_map_[eb_name] =
-        material_db_->getElementBlockParam<RealType>(eb_name, "ACE Thermal Inertia Value", -1.0);
+        material_db_->getElementBlockParam<RealType>(eb_name, "ACE_Thermal_Inertia Value", -1.0);
     if (const_thermal_inertia_map_[eb_name] != -1.0) {
       ALBANY_ASSERT(
-          (const_thermal_inertia_map_[eb_name] > 0.0), "*** ERROR: ACE Thermal Inertia Value must be positive!");
+          (const_thermal_inertia_map_[eb_name] > 0.0), "*** ERROR: ACE_Thermal_Inertia Value must be positive!");
     }
     const_latent_heat_source_map_[eb_name] =
         material_db_->getElementBlockParam<RealType>(eb_name, "ACE Latent Heat Source Value", -1.0);
@@ -535,19 +545,19 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
     ALBANY_ASSERT((element_size_map_[eb_name] >= 0.0), "*** ERROR: ACE Element Size must be non-negative!");
 
     if (material_db_->isElementBlockParam(eb_name, "ACE Time File") == true) {
-      const std::string filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Time File");
+      std::string const filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Time File");
       time_map_[eb_name]         = vectorFromFile(filename);
     }
     if (material_db_->isElementBlockParam(eb_name, "ACE Sea Level File") == true) {
-      const std::string filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Sea Level File");
+      std::string const filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Sea Level File");
       sea_level_map_[eb_name]    = vectorFromFile(filename);
     }
     if (material_db_->isElementBlockParam(eb_name, "ACE Z Depth File") == true) {
-      const std::string filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Z Depth File");
+      std::string const filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Z Depth File");
       z_above_mean_sea_level_map_[eb_name] = vectorFromFile(filename);
     }
     if (material_db_->isElementBlockParam(eb_name, "ACE Salinity File") == true) {
-      const std::string filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Salinity File");
+      std::string const filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Salinity File");
       salinity_map_[eb_name]     = vectorFromFile(filename);
       ALBANY_ASSERT(
           z_above_mean_sea_level_map_[eb_name].size() == salinity_map_[eb_name].size(),
@@ -556,7 +566,7 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
           "Hint: Did you provide the 'ACE Z Depth File'?");
     }
     if (material_db_->isElementBlockParam(eb_name, "ACE Ocean Salinity File") == true) {
-      const std::string filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Ocean Salinity File");
+      std::string const filename = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Ocean Salinity File");
       ocean_salinity_map_[eb_name] = vectorFromFile(filename);
       ALBANY_ASSERT(
           time_map_[eb_name].size() == ocean_salinity_map_[eb_name].size(),
@@ -564,17 +574,17 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
           "values in "
           "ACE Ocean Salinity File must match.");
     }
-    if (material_db_->isElementBlockParam(eb_name, "ACE Porosity File") == true) {
-      const std::string filename       = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Porosity File");
+    if (material_db_->isElementBlockParam(eb_name, "ACE_Porosity File") == true) {
+      std::string const filename       = material_db_->getElementBlockParam<std::string>(eb_name, "ACE_Porosity File");
       porosity_from_file_map_[eb_name] = vectorFromFile(filename);
       ALBANY_ASSERT(
           z_above_mean_sea_level_map_[eb_name].size() == porosity_from_file_map_[eb_name].size(),
           "*** ERROR: Number of z values and number of porosity values in "
-          "ACE Porosity File must match. \n"
+          "ACE_Porosity File must match. \n"
           "Hint: Did you provide the 'ACE Z Depth File'?");
     }
     if (material_db_->isElementBlockParam(eb_name, "ACE Sand File") == true) {
-      const std::string filename   = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Sand File");
+      std::string const filename   = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Sand File");
       sand_from_file_map_[eb_name] = vectorFromFile(filename);
       ALBANY_ASSERT(
           z_above_mean_sea_level_map_[eb_name].size() == sand_from_file_map_[eb_name].size(),
@@ -583,7 +593,7 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
           "Hint: Did you provide the 'ACE Z Depth File'?");
     }
     if (material_db_->isElementBlockParam(eb_name, "ACE Clay File") == true) {
-      const std::string filename   = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Clay File");
+      std::string const filename   = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Clay File");
       clay_from_file_map_[eb_name] = vectorFromFile(filename);
       ALBANY_ASSERT(
           z_above_mean_sea_level_map_[eb_name].size() == clay_from_file_map_[eb_name].size(),
@@ -592,7 +602,7 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
           "Hint: Did you provide the 'ACE Z Depth File'?");
     }
     if (material_db_->isElementBlockParam(eb_name, "ACE Silt File") == true) {
-      const std::string filename   = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Silt File");
+      std::string const filename   = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Silt File");
       silt_from_file_map_[eb_name] = vectorFromFile(filename);
       ALBANY_ASSERT(
           z_above_mean_sea_level_map_[eb_name].size() == silt_from_file_map_[eb_name].size(),
@@ -601,7 +611,7 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
           "Hint: Did you provide the 'ACE Z Depth File'?");
     }
     if (material_db_->isElementBlockParam(eb_name, "ACE Peat File") == true) {
-      const std::string filename   = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Peat File");
+      std::string const filename   = material_db_->getElementBlockParam<std::string>(eb_name, "ACE Peat File");
       peat_from_file_map_[eb_name] = vectorFromFile(filename);
       ALBANY_ASSERT(
           z_above_mean_sea_level_map_[eb_name].size() == peat_from_file_map_[eb_name].size(),
@@ -621,12 +631,14 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
 template <typename EvalT, typename Traits>
 typename EvalT::ScalarT
 ACEThermalParameters<EvalT, Traits>::queryElementBlockParameterMap(
-    const std::string                     eb_name,
+    std::string const                     eb_name,
     const std::map<std::string, RealType> map)
 {
   typename std::map<std::string, RealType>::const_iterator it;
   it = map.find(eb_name);
-  if (it == map.end()) { ALBANY_ABORT("\nError! Element block = " << eb_name << " was not found in map!\n"); }
+  if (it == map.end()) {
+    ALBANY_ABORT("\nError! Element block = " << eb_name << " was not found in map!\n");
+  }
   return it->second;
 }
 // **********************************************************************
@@ -634,7 +646,7 @@ ACEThermalParameters<EvalT, Traits>::queryElementBlockParameterMap(
 template <typename EvalT, typename Traits>
 std::vector<RealType>
 ACEThermalParameters<EvalT, Traits>::queryElementBlockParameterMap(
-    const std::string                                  eb_name,
+    std::string const                                  eb_name,
     const std::map<std::string, std::vector<RealType>> map)
 {
   typename std::map<std::string, std::vector<RealType>>::const_iterator it;

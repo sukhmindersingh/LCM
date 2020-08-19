@@ -109,9 +109,13 @@ MechanicsProblem::getValidProblemParameters() const
 
   validPL->set<std::string>("MaterialDB Filename", "materials.xml", "Filename of material database xml file");
 
-  for (std::string const& variable : variables_problem_) { validPL->sublist(variable, false, ""); }
+  for (std::string const& variable : variables_problem_) {
+    validPL->sublist(variable, false, "");
+  }
 
-  for (std::string const& variable : variables_auxiliary_) { validPL->sublist(variable, false, ""); }
+  for (std::string const& variable : variables_auxiliary_) {
+    validPL->sublist(variable, false, "");
+  }
 
   return validPL;
 }
@@ -125,6 +129,10 @@ MechanicsProblem::constructEvaluators(
     FieldManagerChoice                          fieldManagerChoice,
     Teuchos::RCP<Teuchos::ParameterList> const& responseList)
 {
+  // IKT: uncomment the following if wish to run stand-alone mechanics problem
+  // with ACE_Ice_Saturation field.
+  // is_ace_sequential_thermomechanical_ = true;
+
   using Intrepid2Basis = typename Teuchos::RCP<Intrepid2::Basis<PHX::Device, RealType, RealType>>;
 
   // Collect problem-specific response parameters
@@ -175,7 +183,9 @@ MechanicsProblem::constructEvaluators(
   bool small_strain =
       material_model_name == "Linear Elastic" || material_model_name == "Linear Elastic Volumetric Deviatoric";
 
-  if (material_db_->isElementBlockParam(eb_name, "Strain Flag")) { small_strain = true; }
+  if (material_db_->isElementBlockParam(eb_name, "Strain Flag")) {
+    small_strain = true;
+  }
 
   // Surface element checking
   bool const surface_element = material_db_->getElementBlockParam<bool>(eb_name, "Surface Element", false);
@@ -505,7 +515,9 @@ MechanicsProblem::constructEvaluators(
 
     std::string const temp_type = paramList.get<std::string>("Variable Type", "None");
 
-    if (temp_type == "Time Dependent") { paramList.set<std::string>("Type", temp_type); }
+    if (temp_type == "Time Dependent") {
+      paramList.set<std::string>("Type", temp_type);
+    }
 
     p->set<Teuchos::ParameterList*>("Parameter List", &paramList);
 
@@ -781,23 +793,18 @@ MechanicsProblem::constructEvaluators(
     fm0.template registerEvaluator<EvalT>(ev);
   }
 
-  // Register ACE Ice Saturation
-  // IKT: the if-statement a hack to prevent redundant registration of params
-  // similar to dirichlet_field - I still have no idea why it's needed for mechanics problem...
-  if (is_ace_sequential_thermomechanical_ == true && ace_ice_sat_field_count == 0) {
-    std::string                          stateName = "ACE Ice Saturation";
+  // Register ACE_Ice_Saturation
+  if (is_ace_sequential_thermomechanical_ == true) {
+    std::string                          stateName = "ACE_Ice_Saturation";
     Albany::StateStruct::MeshFieldEntity entity    = Albany::StateStruct::QuadPoint;
     p = stateMgr.registerStateVariable(stateName, dl_->qp_scalar, eb_name, true, &entity, "");
-    ace_ice_sat_field_count++;
-  }
-
-  if (is_ace_sequential_thermomechanical_ == true) {
     // Load parameter using its field name
-    std::string fieldName = "ACE Ice Saturation";
+    std::string fieldName = "ACE_Ice_Saturation";
     p->set<std::string>("Field Name", fieldName);
-    p->set<std::string>("State Name", "ACE Ice Saturation");
+    p->set<std::string>("State Name", stateName);
     p->set<Teuchos::RCP<PHX::DataLayout>>("State Field Layout", dl_->qp_scalar);
-    ev = Teuchos::rcp(new PHAL::LoadStateField<EvalT, PHAL::AlbanyTraits>(*p));
+    using LoadStateFieldST = PHAL::LoadStateFieldBase<EvalT, PHAL::AlbanyTraits, typename EvalT::ScalarT>;
+    ev                     = Teuchos::rcp(new LoadStateFieldST(*p));
     fm0.template registerEvaluator<EvalT>(ev);
   }
 
@@ -938,10 +945,10 @@ MechanicsProblem::constructEvaluators(
       param_list.set<bool>("Have ACE Temperature", true);
     }
 
-    param_list.set<bool>("Have ACE Ice Saturation", false);
+    param_list.set<bool>("Have ACE_Ice_Saturation", false);
     if (is_ace_sequential_thermomechanical_ == true) {
-      p->set<std::string>("ACE Ice Saturation QP Variable Name", "ACE Ice Saturation");
-      param_list.set<bool>("Have ACE Ice Saturation", true);
+      p->set<std::string>("ACE_Ice_Saturation QP Variable Name", "ACE_Ice_Saturation");
+      param_list.set<bool>("Have ACE_Ice_Saturation", true);
     }
 
     param_list.set<bool>("Have Total Concentration", false);
@@ -1001,7 +1008,9 @@ MechanicsProblem::constructEvaluators(
       p->set<std::string>("Reference Coordinates Name", "Coord Vec");
       p->set<Teuchos::RCP<Intrepid2::Cubature<PHX::Device>>>("Cubature", surfaceCubature);
       p->set<Intrepid2Basis>("Intrepid2 Basis", surfaceBasis);
-      if (have_mech_eq_) { p->set<std::string>("Current Coordinates Name", "Current Coordinates"); }
+      if (have_mech_eq_) {
+        p->set<std::string>("Current Coordinates Name", "Current Coordinates");
+      }
 
       // outputs
       p->set<std::string>("Reference Basis Name", "Reference Basis");
@@ -1251,7 +1260,9 @@ MechanicsProblem::constructEvaluators(
       p->set<RealType>("Average J Stabilization Parameter", volume_average_stabilization_param);
 
       // strain
-      if (small_strain) { p->set<std::string>("Strain Name", "Strain"); }
+      if (small_strain) {
+        p->set<std::string>("Strain Name", "Strain");
+      }
 
       // set flag for return strain and velocity gradient
       bool have_velocity_gradient(false);
@@ -1263,7 +1274,9 @@ MechanicsProblem::constructEvaluators(
 
         have_velocity_gradient = material_db_->getElementBlockParam<bool>(eb_name, flag);
 
-        if (have_velocity_gradient) { p->set<std::string>("Velocity Gradient Name", "Velocity Gradient"); }
+        if (have_velocity_gradient) {
+          p->set<std::string>("Velocity Gradient Name", "Velocity Gradient");
+        }
       }
 
       // set flag for return strain and plastic velocity gradient
@@ -1425,7 +1438,7 @@ MechanicsProblem::constructEvaluators(
       p->set<std::string>("Body Force Name", "Body Force");
       p->set<std::string>("Analytic Mass Name", "Analytic Mass Residual");
       if (is_ace_sequential_thermomechanical_ == true) {
-        p->set<std::string>("ACE Ice Saturation QP Variable Name", "ACE Ice Saturation");
+        p->set<std::string>("ACE_Ice_Saturation QP Variable Name", "ACE_Ice_Saturation");
       }
       bool const use_analytic_mass = material_db_->getElementBlockParam<bool>(eb_name, "Use Analytic Mass", false);
       p->set<bool>("Use Analytic Mass", use_analytic_mass);
@@ -1485,7 +1498,9 @@ MechanicsProblem::constructEvaluators(
       p->set<std::string>("Pressure Name", pressure);
     }
 
-    if (small_strain) { p->set<bool>("Small Strain", true); }
+    if (small_strain) {
+      p->set<bool>("Small Strain", true);
+    }
 
     // Output
     p->set<std::string>("First PK Stress Name", firstPK);
@@ -1982,8 +1997,8 @@ MechanicsProblem::constructEvaluators(
     p->set<std::string>("ACE Temperature Name", "ACE Temperature");
     p->set<std::string>("ACE Temperature Dot Name", "ACE Temperature Dot");
     p->set<std::string>("ACE Temperature Gradient Name", "ACE Temperature Gradient");
-    p->set<std::string>("ACE Thermal Conductivity Name", "ACE Thermal Conductivity");
-    p->set<std::string>("ACE Thermal Inertia Name", "ACE Thermal Inertia");
+    p->set<std::string>("ACE_Thermal_Conductivity Name", "ACE_Thermal_Conductivity");
+    p->set<std::string>("ACE_Thermal_Inertia Name", "ACE_Thermal_Inertia");
     p->set<std::string>("ACE Residual Name", "ACE Temperature Residual");
     if (SolutionType == SolutionMethodType::Continuation) {
       p->set<std::string>("Solution Method Type", "Continuation");

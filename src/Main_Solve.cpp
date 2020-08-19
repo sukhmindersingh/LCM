@@ -81,15 +81,21 @@ main(int argc, char* argv[])
 
   const auto stackedTimer = Teuchos::rcp(new Teuchos::StackedTimer("Albany Total Time"));
   Teuchos::TimeMonitor::setStackedTimer(stackedTimer);
+
+  bool report_timings = false;
   try {
     auto setupTimer = Teuchos::rcp(new Teuchos::TimeMonitor(*Teuchos::TimeMonitor::getNewTimer("Albany: Setup Time")));
 
     RCP<Teuchos_Comm const> comm = Albany::getDefaultComm();
 
     // Connect vtune for performance profiling
-    if (cmd.vtune) { Albany::connect_vtune(comm->getRank()); }
+    if (cmd.vtune) {
+      Albany::connect_vtune(comm->getRank());
+    }
 
     Albany::SolverFactory slvrfctry(cmd.yaml_filename, comm);
+
+    report_timings = slvrfctry.getParameters().get("Enable TimeMonitor Output", false);
 
     RCP<Albany::Application>                             app;
     const RCP<Thyra::ResponseOnlyModelEvaluatorBase<ST>> solver = slvrfctry.createAndGetAlbanyApp(app, comm, comm);
@@ -280,6 +286,7 @@ main(int argc, char* argv[])
       if (debugParams.get<bool>("Analyze Memory", false)) Albany::printMemoryAnalysis(std::cout, comm);
 
       if (writeToMatrixMarketDistrSolnMap == true) {
+        Albany::writeMatrixMarket(xfinal, "xfinal_distributed");
         Albany::writeMatrixMarket(xfinal->space(), "xfinal_distributed_map");
       }
     }
@@ -288,7 +295,6 @@ main(int argc, char* argv[])
   if (!success) status += 10000;
 
   stackedTimer->stop("Albany Total Time");
-  bool const report_timings{false};
   if (report_timings == true) {
     Teuchos::StackedTimer::OutputOptions options;
     options.output_fraction = true;

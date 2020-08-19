@@ -116,7 +116,9 @@ Application::initialSetUp(const RCP<Teuchos::ParameterList>& params)
 
   ProblemFactory problemFactory(params, paramLib, comm);
   rc_mgr = AAdapt::rc::Manager::create(Teuchos::rcp(&stateMgr, false), *problemParams);
-  if (Teuchos::nonnull(rc_mgr)) { problemFactory.setReferenceConfigurationManager(rc_mgr); }
+  if (Teuchos::nonnull(rc_mgr)) {
+    problemFactory.setReferenceConfigurationManager(rc_mgr);
+  }
   problem = problemFactory.create();
 
   // Validate Problem parameters against list for this specific problem
@@ -199,6 +201,22 @@ Application::initialSetUp(const RCP<Teuchos::ParameterList>& params)
 
     Teuchos::ParameterList nox_params;
 
+    //The following code checks if we are using an Explicit stepper in Tempus, so as 
+    //to do appropriate error checking (e.g., disallow DBCs, which do not work with explicit steppers). 
+    //IKT, 8/13/2020: warning - the logic here may not encompass all explicit steppers
+    //in Tempus! 
+    std::string const expl_str = "Explicit"; 
+    std::string const forward_eul = "Forward Euler"; 
+    bool is_explicit_scheme = false; 
+    std::size_t found = stepper_type.find(expl_str); 
+    std::size_t found2 = stepper_type.find(forward_eul); 
+    if ((found != std::string::npos) || (found2 != std::string::npos)) {
+      is_explicit_scheme = true; 
+    }
+    if ((stepper_type == "General ERK") || (stepper_type == "RK1")) {
+      is_explicit_scheme = true;
+    } 
+    
     if ((stepper_type == "Newmark Implicit d-Form") || (stepper_type == "Newmark Implicit a-Form")) {
       bool const have_solver_name = tempus_stepper_params.isType<std::string>("Solver Name");
 
@@ -226,7 +244,9 @@ Application::initialSetUp(const RCP<Teuchos::ParameterList>& params)
         }
       }
       if (stepper_type == "Newmark Implicit a-Form") { requires_orig_dbcs_ = true; }
-    } else if (stepper_type == "Newmark Explicit a-Form") {
+    } 
+    //Explicit steppers require SDBCs
+    if (is_explicit_scheme == true) {
       requires_sdbcs_ = true;
     }
 
@@ -274,7 +294,9 @@ Application::initialSetUp(const RCP<Teuchos::ParameterList>& params)
   determinePiroSolver(params);
 
   physicsBasedPreconditioner = problemParams->get("Use Physics-Based Preconditioner", false);
-  if (physicsBasedPreconditioner) { precType = problemParams->get("Physics-Based Preconditioner", "Teko"); }
+  if (physicsBasedPreconditioner) {
+    precType = problemParams->get("Physics-Based Preconditioner", "Teko");
+  }
 
   // Create debug output object
   auto debugParams       = Teuchos::sublist(params, "Debug Output", true);
@@ -387,7 +409,7 @@ Application::buildProblem()
     ALBANY_ABORT(
         "Error in Albany::Application: you are using a "
         "solver that requires SDBCs yet you are not "
-        "using SDBCs!\n");
+        "using SDBCs!  Explicit time-steppers require SDBCs.\n");
   }
 
   if ((requires_orig_dbcs_ == true) && (problem->useSDBCs() == true)) {
@@ -465,7 +487,9 @@ Application::setScaling(const Teuchos::RCP<Teuchos::ParameterList>& params)
   scaleBCdofs                               = scalingParams->get<bool>("Scale BC Dofs", false);
   std::string scaleType                     = scalingParams->get<std::string>("Type", "Constant");
 
-  if (scale == 0.0) { scale = 1.0; }
+  if (scale == 0.0) {
+    scale = 1.0;
+  }
 
   if (scaleType == "Constant") {
     scale_type = CONSTANT;
@@ -568,7 +592,9 @@ Application::finalSetUp(
   }
 
   // Now setup response functions (see note above)
-  for (int i = 0; i < responses.size(); i++) { responses[i]->setup(); }
+  for (int i = 0; i < responses.size(); i++) {
+    responses[i]->setup();
+  }
 
   // Set up memory for workset
   fm = problem->getFieldManager();
@@ -612,7 +638,9 @@ Application::finalSetUp(
   // MPerego: Preforming post registration setup here to make sure that the
   // discretization is already created, so that  derivative dimensions are
   // known.
-  for (int i = 0; i < responses.size(); ++i) { responses[i]->postRegSetup(); }
+  for (int i = 0; i < responses.size(); ++i) {
+    responses[i]->postRegSetup();
+  }
 }
 
 RCP<AbstractDiscretization>
@@ -758,7 +786,9 @@ checkDerivatives(
     const Teuchos::RCP<const Thyra_LinearOp>& jacobian,
     int const                                 check_lvl)
 {
-  if (check_lvl <= 0) { return; }
+  if (check_lvl <= 0) {
+    return;
+  }
 
   // Work vectors. x's map is compatible with f's, so don't distinguish among
   // maps in this function.
@@ -767,7 +797,9 @@ checkDerivatives(
   Teuchos::RCP<Thyra_Vector> w3 = Thyra::createMember(x->space());
 
   Teuchos::RCP<Thyra_MultiVector> mv;
-  if (check_lvl > 1) { mv = Thyra::createMembers(x->space(), 5); }
+  if (check_lvl > 1) {
+    mv = Thyra::createMembers(x->space(), 5);
+  }
 
   // Construct a perturbation.
   double const               delta = 1e-7;
@@ -825,7 +857,9 @@ checkDerivatives(
   // fd = fpd - f.
   Teuchos::RCP<Thyra_Vector> fd = fpd;
   scale_and_update(fpd, 1.0, f, -1.0);
-  if (Teuchos::nonnull(mv)) { scale_and_update(mv->col(3), 0.0, fd, 1.0); }
+  if (Teuchos::nonnull(mv)) {
+    scale_and_update(mv->col(3), 0.0, fd, 1.0);
+  }
 
   // Jxd = J xd.
   Teuchos::RCP<Thyra_Vector> Jxd = w2;
@@ -838,7 +872,9 @@ checkDerivatives(
   // d = norm(fd - Jxd).
   Teuchos::RCP<Thyra_Vector> d = fd;
   scale_and_update(d, 1.0, Jxd, -1.0);
-  if (Teuchos::nonnull(mv)) { scale_and_update(mv->col(4), 0.0, d, 1.0); }
+  if (Teuchos::nonnull(mv)) {
+    scale_and_update(mv->col(4), 0.0, d, 1.0);
+  }
   double const dn = d->norm_inf();
 
   // Assess.
@@ -1058,7 +1094,9 @@ Application::computeGlobalResidualImpl(
 
   // Set parameters
   for (int i = 0; i < p.size(); i++) {
-    for (unsigned int j = 0; j < p[i].size(); j++) { p[i][j].family->setRealValueForAllTypes(p[i][j].baseValue); }
+    for (unsigned int j = 0; j < p[i].size(); j++) {
+      p[i][j].family->setRealValueForAllTypes(p[i][j].baseValue);
+    }
   }
 
   // Store pointers to solution and time derivatives.
@@ -1083,7 +1121,9 @@ Application::computeGlobalResidualImpl(
   // Set data in Workset struct, and perform fill via field manager
   {
     TEUCHOS_FUNC_TIME_MONITOR("Albany Residual Fill: Evaluate");
-    if (Teuchos::nonnull(rc_mgr)) { rc_mgr->init_x_if_not(x->space()); }
+    if (Teuchos::nonnull(rc_mgr)) {
+      rc_mgr->init_x_if_not(x->space());
+    }
 
     PHAL::Workset workset;
 
@@ -1112,7 +1152,9 @@ Application::computeGlobalResidualImpl(
       // FillType template argument used to specialize Sacado
       fm[wsPhysIndex[ws]]->evaluateFields<EvalT>(workset);
 
-      if (nfm != Teuchos::null) { deref_nfm(nfm, wsPhysIndex, ws)->evaluateFields<EvalT>(workset); }
+      if (nfm != Teuchos::null) {
+        deref_nfm(nfm, wsPhysIndex, ws)->evaluateFields<EvalT>(workset);
+      }
     }
   }
 
@@ -1141,7 +1183,9 @@ Application::computeGlobalResidualImpl(
   ALBANY_ASSERT(scale == 1.0, "non-unity scale implementation requires MPI!");
 #endif
 
-  if (scaleBCdofs == false && scale != 1.0) { Thyra::ele_wise_scale<ST>(*scaleVec_, f.ptr()); }
+  if (scaleBCdofs == false && scale != 1.0) {
+    Thyra::ele_wise_scale<ST>(*scaleVec_, f.ptr());
+  }
 
   // Push the assembled residual values back into the overlap vector
   cas_manager->scatter(f, overlapped_f, CombineMode::INSERT);
@@ -1159,7 +1203,9 @@ Application::computeGlobalResidualImpl(
   }
 
   // scale residual by scaleVec_ if scaleBCdofs is on
-  if (scaleBCdofs == true) { Thyra::ele_wise_scale<ST>(*scaleVec_, f.ptr()); }
+  if (scaleBCdofs == true) {
+    Thyra::ele_wise_scale<ST>(*scaleVec_, f.ptr());
+  }
 }
 
 void
@@ -1178,23 +1224,35 @@ Application::computeGlobalResidual(
   // every time it arises or at requested count#
   auto const write_sol_mm =
       writeToMatrixMarketSol != 0 && (writeToMatrixMarketSol == -1 || countSol == writeToMatrixMarketSol);
-  if (write_sol_mm == true) { writeMatrixMarket(x, "sol", countSol); }
+
+  if (write_sol_mm == true) {
+    *out << "Writing global solution #" << countSol << " to MatrixMarket at time t = " << current_time << ".\n";
+    writeMatrixMarket(x, "sol", countSol);
+  }
   auto const write_sol_co = writeToCoutSol != 0 && (writeToCoutSol == -1 || countSol == writeToCoutSol);
   if (write_sol_co == true) {
-    std::cout << "Global Solution #" << countSol << ": " << std::endl;
+    *out << "Global solution #" << countSol << " corresponding to time t = " << current_time << ":\n";
     describe(x.getConst(), *out, Teuchos::VERB_EXTREME);
   }
-  if (writeToMatrixMarketSol != 0 || writeToCoutSol != 0) { countSol++; }
+  if (writeToMatrixMarketSol != 0 || writeToCoutSol != 0) {
+    countSol++;
+  }
 
-  auto const write_red_mm =
+  auto const write_res_mm =
       writeToMatrixMarketRes != 0 && (writeToMatrixMarketRes == -1 || countRes == writeToMatrixMarketRes);
-  if (write_red_mm == true) { writeMatrixMarket(f, "rhs", countRes); }
-  auto const write_red_co = writeToCoutRes != 0 && (writeToCoutRes == -1 || countRes == writeToCoutRes);
-  if (write_red_co == true) {
-    std::cout << "Global Residual #" << countRes << ": " << std::endl;
+
+  if (write_res_mm == true) {
+    *out << "Writing global residual #" << countRes << " to MatrixMarket at time t = " << current_time << ".\n";
+    writeMatrixMarket(f, "rhs", countRes);
+  }
+  auto const write_res_co = writeToCoutRes != 0 && (writeToCoutRes == -1 || countRes == writeToCoutRes);
+  if (write_res_co == true) {
+    *out << "Global residual #" << countRes << " corresponding to time t = " << current_time << ":\n";
     describe(f.getConst(), *out, Teuchos::VERB_EXTREME);
   }
-  if (writeToMatrixMarketRes != 0 || writeToCoutRes != 0) { countRes++; }
+  if (writeToMatrixMarketRes != 0 || writeToCoutRes != 0) {
+    countRes++;
+  }
 }
 
 void
@@ -1222,7 +1280,9 @@ Application::computeGlobalJacobianImpl(
   int numWorksets = wsElNodeEqID.size();
 
   Teuchos::RCP<Thyra_Vector> overlapped_f;
-  if (Teuchos::nonnull(f)) { overlapped_f = solMgr->get_overlapped_f(); }
+  if (Teuchos::nonnull(f)) {
+    overlapped_f = solMgr->get_overlapped_f();
+  }
 
   Teuchos::RCP<Thyra_LinearOp> overlapped_jac = solMgr->get_overlapped_jac();
   auto                         cas_manager    = solMgr->get_cas_manager();
@@ -1235,7 +1295,9 @@ Application::computeGlobalJacobianImpl(
 
   // Set parameters
   for (int i = 0; i < p.size(); i++) {
-    for (unsigned int j = 0; j < p[i].size(); j++) { p[i][j].family->setRealValueForAllTypes(p[i][j].baseValue); }
+    for (unsigned int j = 0; j < p[i].size(); j++) {
+      p[i][j].family->setRealValueForAllTypes(p[i][j].baseValue);
+    }
   }
 
   // Zero out overlapped residual
@@ -1248,10 +1310,16 @@ Application::computeGlobalJacobianImpl(
   resumeFill(jac);
   assign(jac, 0.0);
 
-  if (!isFillActive(overlapped_jac)) { resumeFill(overlapped_jac); }
+  if (!isFillActive(overlapped_jac)) {
+    resumeFill(overlapped_jac);
+  }
   assign(overlapped_jac, 0.0);
-  if (isFillActive(overlapped_jac)) { fillComplete(overlapped_jac); }
-  if (!isFillActive(overlapped_jac)) { resumeFill(overlapped_jac); }
+  if (isFillActive(overlapped_jac)) {
+    fillComplete(overlapped_jac);
+  }
+  if (!isFillActive(overlapped_jac)) {
+    resumeFill(overlapped_jac);
+  }
 
   // Set data in Workset struct, and perform fill via field manager
   {
@@ -1273,8 +1341,12 @@ Application::computeGlobalJacobianImpl(
       (workset.Jacobian_deriv_dims).push_back(PHAL::getDerivativeDimensions<EvalT>(this, ps));
     }
 
-    if (!workset.f.is_null()) { workset.f_kokkos = getNonconstDeviceData(workset.f); }
-    if (!workset.Jac.is_null()) { workset.Jac_kokkos = getNonconstDeviceData(workset.Jac); }
+    if (!workset.f.is_null()) {
+      workset.f_kokkos = getNonconstDeviceData(workset.f);
+    }
+    if (!workset.Jac.is_null()) {
+      workset.Jac_kokkos = getNonconstDeviceData(workset.Jac);
+    }
     for (int ws = 0; ws < numWorksets; ws++) {
       std::string const evalName = PHAL::evalName<EvalT>("FM", wsPhysIndex[ws]);
       loadWorksetBucketInfo<EvalT>(workset, ws, evalName);
@@ -1297,7 +1369,9 @@ Application::computeGlobalJacobianImpl(
   {
     TEUCHOS_FUNC_TIME_MONITOR("Albany Jacobian Fill: Export");
     // Assemble global residual
-    if (Teuchos::nonnull(f)) { cas_manager->combine(overlapped_f, f, CombineMode::ADD); }
+    if (Teuchos::nonnull(f)) {
+      cas_manager->combine(overlapped_f, f, CombineMode::ADD);
+    }
     // Assemble global Jacobian
     cas_manager->combine(overlapped_jac, jac, CombineMode::ADD);
   }
@@ -1356,7 +1430,9 @@ Application::computeGlobalJacobianImpl(
 
   // Apply scaling to residual and Jacobian
   if (scaleBCdofs == true) {
-    if (Teuchos::nonnull(f)) { Thyra::ele_wise_scale<ST>(*scaleVec_, f.ptr()); }
+    if (Teuchos::nonnull(f)) {
+      Thyra::ele_wise_scale<ST>(*scaleVec_, f.ptr());
+    }
     // We MUST be able to cast jac to ScaledLinearOpBase in order to left scale
     // it.
     auto jac_scaled_lop = Teuchos::rcp_dynamic_cast<Thyra::ScaledLinearOpBase<ST>>(jac, true);
@@ -1392,20 +1468,23 @@ Application::computeGlobalJacobian(
     // If requesting writing to MatrixMarket of Jacobian...
     if (writeToMatrixMarketJac == -1) {
       // write jacobian to MatrixMarket every time it arises
+
+      *out << "Writing global Jacobian #" << countJac << " to MatrixMarket at time t = " << current_time << ".\n";
       writeMatrixMarket(jac.getConst(), "jac", countJac);
     } else if (countJac == writeToMatrixMarketJac) {
       // write jacobian only at requested count#
+      *out << "Writing global Jacobian #" << countJac << " to MatrixMarket at time t = " << current_time << ".\n";
       writeMatrixMarket(jac.getConst(), "jac", countJac);
     }
   }
   if (writeToCoutJac != 0) {
     // If requesting writing Jacobian to standard output (cout)...
     if (writeToCoutJac == -1) {  // cout jacobian every time it arises
-      *out << "Global Jacobian #" << countJac << ":\n";
+      *out << "Global Jacobian #" << countJac << " corresponding to time t = " << current_time << ":\n";
       describe(jac.getConst(), *out, Teuchos::VERB_EXTREME);
     } else if (countJac == writeToCoutJac) {
       // cout jacobian only at requested count#
-      *out << "Global Jacobian #" << countJac << ":\n";
+      *out << "Global Jacobian #" << countJac << " corresponding to time t = " << current_time << ":\n";
       describe(jac.getConst(), *out, Teuchos::VERB_EXTREME);
     }
   }
@@ -1641,7 +1720,9 @@ void
 Application::setScale(Teuchos::RCP<const Thyra_LinearOp> jac)
 {
   if (scaleBCdofs == true) {
-    if (scaleVec_->norm_2() == 0.0) { scaleVec_->assign(1.0); }
+    if (scaleVec_->norm_2() == 0.0) {
+      scaleVec_->assign(1.0);
+    }
     return;
   }
 
@@ -1673,10 +1754,14 @@ void
 Application::setScaleBCDofs(PHAL::Workset& workset, Teuchos::RCP<const Thyra_LinearOp> jac)
 {
   // First step: set scaleVec_ to all 1.0s if it is all 0s
-  if (scaleVec_->norm_2() == 0) { scaleVec_->assign(1.0); }
+  if (scaleVec_->norm_2() == 0) {
+    scaleVec_->assign(1.0);
+  }
 
   // If calling setScaleBCDofs with null Jacobian, don't recompute the scaling
-  if (jac == Teuchos::null) { return; }
+  if (jac == Teuchos::null) {
+    return;
+  }
 
   // For diagonal or abs row sum scaling, set the scale equal to the maximum
   // magnitude value of the diagonal / abs row sum (inf-norm).  This way,
@@ -1695,7 +1780,9 @@ Application::setScaleBCDofs(PHAL::Workset& workset, Teuchos::RCP<const Thyra_Lin
     scale = tmp->norm_inf();
   }
 
-  if (scale == 0.0) { scale = 1.0; }
+  if (scale == 0.0) {
+    scale = 1.0;
+  }
 
   auto scaleVecLocalData = getNonconstLocalData(scaleVec_);
   for (size_t ns = 0; ns < nodeSetIDs_.size(); ns++) {
@@ -1747,7 +1834,9 @@ Application::setupBasicWorksetInfo(
 
   // Set parameters
   for (int i = 0; i < p.size(); i++) {
-    for (unsigned int j = 0; j < p[i].size(); j++) { p[i][j].family->setRealValueForAllTypes(p[i][j].baseValue); }
+    for (unsigned int j = 0; j < p[i].size(); j++) {
+      p[i][j].family->setRealValueForAllTypes(p[i][j].baseValue);
+    }
   }
 
   double const this_time    = fixTime(current_time);

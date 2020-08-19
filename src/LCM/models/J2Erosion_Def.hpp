@@ -28,13 +28,13 @@ J2ErosionKernel<EvalT, Traits>::J2ErosionKernel(
     z_above_mean_sea_level_ = vectorFromFile(filename);
   }
 
-  if (p->isParameter("ACE Porosity File") == true) {
-    auto const filename = p->get<std::string>("ACE Porosity File");
+  if (p->isParameter("ACE_Porosity File") == true) {
+    auto const filename = p->get<std::string>("ACE_Porosity File");
     porosity_from_file_ = vectorFromFile(filename);
     ALBANY_ASSERT(
         z_above_mean_sea_level_.size() == porosity_from_file_.size(),
         "*** ERROR: Number of z values and number of porosity values in "
-        "ACE Porosity File must match.");
+        "ACE_Porosity File must match.");
   }
 
   // retrieve appropriate field name strings
@@ -53,7 +53,7 @@ J2ErosionKernel<EvalT, Traits>::J2ErosionKernel(
   setDependentField("Elastic Modulus", dl->qp_scalar);
   setDependentField("Yield Strength", dl->qp_scalar);
   setDependentField("Hardening Modulus", dl->qp_scalar);
-  setDependentField("ACE Ice Saturation", dl->qp_scalar);
+  setDependentField("ACE_Ice_Saturation", dl->qp_scalar);
   setDependentField("Delta Time", dl->workset_scalar);
 
   // define the evaluated fields
@@ -101,14 +101,14 @@ J2ErosionKernel<EvalT, Traits>::init(
   std::string J_string            = field_name_map_["J"];
 
   // extract dependent MDFields
-  def_grad_           = *dep_fields[F_string];
-  J_                  = *dep_fields[J_string];
-  poissons_ratio_     = *dep_fields["Poissons Ratio"];
-  elastic_modulus_    = *dep_fields["Elastic Modulus"];
-  yield_strength_     = *dep_fields["Yield Strength"];
-  hardening_modulus_  = *dep_fields["Hardening Modulus"];
-  delta_time_         = *dep_fields["Delta Time"];
-  ace_ice_saturation_ = *dep_fields["ACE Ice Saturation"];
+  def_grad_          = *dep_fields[F_string];
+  J_                 = *dep_fields[J_string];
+  poissons_ratio_    = *dep_fields["Poissons Ratio"];
+  elastic_modulus_   = *dep_fields["Elastic Modulus"];
+  yield_strength_    = *dep_fields["Yield Strength"];
+  hardening_modulus_ = *dep_fields["Hardening Modulus"];
+  delta_time_        = *dep_fields["Delta Time"];
+  ice_saturation_    = *dep_fields["ACE_Ice_Saturation"];
 
   // extract evaluated MDFields
   stress_     = *eval_fields[cauchy_string];
@@ -140,7 +140,9 @@ J2ErosionKernel<EvalT, Traits>::init(
   current_time_ = workset.current_time;
 
   auto const num_cells = workset.numCells;
-  for (auto cell = 0; cell < num_cells; ++cell) { failed_(cell, 0) = 0.0; }
+  for (auto cell = 0; cell < num_cells; ++cell) {
+    failed_(cell, 0) = 0.0;
+  }
 }
 
 // J2 nonlinear system
@@ -246,8 +248,10 @@ J2ErosionKernel<EvalT, Traits>::operator()(int cell, int pt) const
   ScalarT const K              = hardening_modulus_(cell, pt);
   ScalarT const J1             = J_(cell, pt);
   ScalarT const Jm23           = 1.0 / std::cbrt(J1 * J1);
-  ScalarT const ice_saturation = ace_ice_saturation_(cell, pt);
+  ScalarT const ice_saturation = ice_saturation_(cell, pt);
   ScalarT       Y              = yield_strength_(cell, pt);
+
+  // ALBANY_DUMP("**** CELL : " << cell << ", POINT : " << pt << ", ICE SATURATION : " << ice_saturation);
 
   auto&& delta_time = delta_time_(0);
   auto&& failed     = failed_(cell, 0);
@@ -273,7 +277,9 @@ J2ErosionKernel<EvalT, Traits>::operator()(int cell, int pt) const
   Tensor Fpn(num_dims_);
 
   for (int i{0}; i < num_dims_; ++i) {
-    for (int j{0}; j < num_dims_; ++j) { Fpn(i, j) = ScalarT(Fp_old_(cell, pt, i, j)); }
+    for (int j{0}; j < num_dims_; ++j) {
+      Fpn(i, j) = ScalarT(Fp_old_(cell, pt, i, j));
+    }
   }
 
   // compute trial state
@@ -336,7 +342,9 @@ J2ErosionKernel<EvalT, Traits>::operator()(int cell, int pt) const
     Tensor const Fpnew = expA * Fpn;
 
     for (int i{0}; i < num_dims_; ++i) {
-      for (int j{0}; j < num_dims_; ++j) { Fp_(cell, pt, i, j) = Fpnew(i, j); }
+      for (int j{0}; j < num_dims_; ++j) {
+        Fp_(cell, pt, i, j) = Fpnew(i, j);
+      }
     }
   } else {
     eqps_(cell, pt) = eqps_old_(cell, pt);
@@ -344,7 +352,9 @@ J2ErosionKernel<EvalT, Traits>::operator()(int cell, int pt) const
     if (have_temperature_ == true) source_(cell, pt) = 0.0;
 
     for (int i{0}; i < num_dims_; ++i) {
-      for (int j{0}; j < num_dims_; ++j) { Fp_(cell, pt, i, j) = Fpn(i, j); }
+      for (int j{0}; j < num_dims_; ++j) {
+        Fp_(cell, pt, i, j) = Fpn(i, j);
+      }
     }
   }
 
@@ -358,11 +368,15 @@ J2ErosionKernel<EvalT, Traits>::operator()(int cell, int pt) const
   sigma = p * I + s / J_(cell, pt);
 
   for (int i(0); i < num_dims_; ++i) {
-    for (int j(0); j < num_dims_; ++j) { stress_(cell, pt, i, j) = sigma(i, j); }
+    for (int j(0); j < num_dims_; ++j) {
+      stress_(cell, pt, i, j) = sigma(i, j);
+    }
   }
 
   // Determine if critical stress is exceeded
-  if (yielded == true) failed += 1.0;
+  if (yielded == true) {
+    failed += 1.0;
+  }
 
   // Determine if kinematic failure occurred
   auto const critical_angle = critical_angle_;
@@ -373,7 +387,9 @@ J2ErosionKernel<EvalT, Traits>::operator()(int cell, int pt) const
     cosine            = cosine > 1.0 ? 1.0 : cosine;
     cosine            = cosine < -1.0 ? -1.0 : cosine;
     auto const theta  = std::acos(cosine);
-    if (std::abs(theta) >= critical_angle) failed += 1.0;
+    if (std::abs(theta) >= critical_angle) {
+      failed += 1.0;
+    }
   }
 }
 }  // namespace LCM

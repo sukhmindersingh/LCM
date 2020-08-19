@@ -336,7 +336,9 @@ SolverFactory::checkSolveTestResults(
   else if (testParams->isSublist(sensitivity_sublist_name))
     sensitivityParams = &(testParams->sublist(sensitivity_sublist_name));
   int numSensTests = 0;
-  if (sensitivityParams != 0) { numSensTests = sensitivityParams->get<int>("Number of Sensitivity Comparisons", 0); }
+  if (sensitivityParams != 0) {
+    numSensTests = sensitivityParams->get<int>("Number of Sensitivity Comparisons", 0);
+  }
   if (numSensTests > 0) {
     ALBANY_ASSERT(
         dgdp != Teuchos::null,
@@ -476,7 +478,9 @@ SolverFactory::scaledCompare(double x1, double x2, double relTol, double absTol,
   auto rel_ok  = (d <= (avg_mag * relTol));
   auto abs_ok  = (d <= fabs(absTol));
   auto ok      = rel_ok || abs_ok;
-  if (!ok) { *out << name << ": " << x1 << " != " << x2 << " (rel " << relTol << " abs " << absTol << ")\n"; }
+  if (!ok) {
+    *out << name << ": " << x1 << " != " << x2 << " (rel " << relTol << " abs " << absTol << ")\n";
+  }
   return !ok;
 }
 
@@ -552,6 +556,7 @@ SolverFactory::getValidAppParameters() const
   validPL->sublist("Piro", false, "Piro sublist");
   validPL->sublist("Coupled System", false, "Coupled system sublist");
   validPL->sublist("Alternating System", false, "Alternating system sublist");
+  validPL->set<bool>("Enable TimeMonitor Output", false, "Flag to enable TimeMonitor output");
 
   // validPL->set<std::string>("Jacobian Operator", "Have Jacobian", "Flag to
   // allow Matrix-Free specification in Piro");
@@ -676,7 +681,9 @@ SolverFactory::getValidParameterParameters() const
 
   validPL->set<int>("Number", 0);
   int const maxParameters = 100;
-  for (int i = 0; i < maxParameters; i++) { validPL->set<std::string>(strint("Parameter", i), ""); }
+  for (int i = 0; i < maxParameters; i++) {
+    validPL->set<std::string>(strint("Parameter", i), "");
+  }
   return validPL;
 }
 
