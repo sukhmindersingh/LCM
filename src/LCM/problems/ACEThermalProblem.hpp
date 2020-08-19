@@ -216,7 +216,7 @@ Albany::ACEThermalProblem::constructEvaluators(
     p->set<string>("Weighted Gradient BF Name", "wGrad BF");
     p->set<string>("BF Name", "BF");
     p->set<string>("ACE_Thermal_Inertia QP Variable Name", "ACE_Thermal_Inertia");
-    p->set<string>("ACE_Latent_Heat_Source QP Variable Name", "ACE Latent Heat Source");
+    p->set<string>("ACE_Latent_Heat_Source QP Variable Name", "ACE_Latent_Heat_Source");
     p->set<string>("ACE_Bluff_Salinity QP Variable Name", "ACE_Bluff_Salinity");
     p->set<string>("ACE_Ice_Saturation QP Variable Name", "ACE_Ice_Saturation");
     p->set<string>("ACE_Density QP Variable Name", "ACE_Density");

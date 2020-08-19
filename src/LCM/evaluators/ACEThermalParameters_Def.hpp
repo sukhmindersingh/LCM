@@ -505,10 +505,10 @@ ACEThermalParameters<EvalT, Traits>::createElementBlockParameterMaps()
           (const_thermal_inertia_map_[eb_name] > 0.0), "*** ERROR: ACE_Thermal_Inertia Value must be positive!");
     }
     const_latent_heat_source_map_[eb_name] =
-        material_db_->getElementBlockParam<RealType>(eb_name, "ACE Latent Heat Source Value", -1.0);
+        material_db_->getElementBlockParam<RealType>(eb_name, "ACE_Latent_Heat_Source Value", -1.0);
     if (const_latent_heat_source_map_[eb_name] != -1.0) {
       ALBANY_ASSERT(
-          (const_latent_heat_source_map_[eb_name] > 0.0), "*** ERROR: ACE Latent Heat Source Value must be positive!");
+          (const_latent_heat_source_map_[eb_name] > 0.0), "*** ERROR: ACE_Latent_Heat_Source Value must be positive!");
     }
     ice_density_map_[eb_name] = material_db_->getElementBlockParam<RealType>(eb_name, "ACE Ice Density", 920.0);
     ALBANY_ASSERT((ice_density_map_[eb_name] >= 0.0), "*** ERROR: ACE Ice Density must be non-negative!");
